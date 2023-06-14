@@ -14,4 +14,8 @@
     <Folder Include="Data" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\HardwareStore.Data\HardwareStore.Data.csproj" />
+  </ItemGroup>
+
 </Project>

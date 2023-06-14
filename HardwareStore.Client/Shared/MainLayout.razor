@@ -2,7 +2,7 @@
 
 <PageTitle>Магазин бытовой техники Атлант</PageTitle>
 
-<MudThemeProvider/>
+<MudThemeProvider IsDarkMode="true"/>
 <MudDialogProvider/>
 <MudSnackbarProvider/>
 
@@ -34,7 +34,7 @@
     <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
         <NavMenu/>
     </MudDrawer>
-    <MudMainContent>
+    <MudMainContent Class="ma-5">
         @Body
     </MudMainContent>
 </MudLayout>
