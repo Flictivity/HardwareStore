@@ -24,7 +24,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Models" />
     <Folder Include="Read\Queries" />
     <Folder Include="Repositories" />
   </ItemGroup>

@@ -18,7 +18,7 @@ public static class ServiceCollectionExtensions
         Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
         services.AddTransient(_ => new StoreReadonlyContext(connectionString));
 
-        services.AddDbContext<StoreContext>(options =>
+        services.AddDbContext<HardwareStoreContext>(options =>
         {
             options.UseNpgsql(connectionString,
                 postgresOptions =>
