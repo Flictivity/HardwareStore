@@ -1,0 +1,79 @@
+﻿@page "/main_categories"
+@using HardwareStore.Domain.Models
+@using HardwareStore.Domain.Services
+@using HardwareStore.Client.Shared.Window
+
+@inject ICategoryService CategoryService;
+@inject IDialogService DialogService;
+
+<PageTitle>Категории</PageTitle>
+<MudTable Items="@_mainCategories"
+          T="MainCategory" OnRowClick="async e => await RowClickEvent(e)" Filter="new Func<MainCategory, bool>(FilterFunc1)" Hover="true">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Категории</MudText>
+        <MudSpacer/>
+        <MudTextField @bind-Value="_searchString" Placeholder="Поиск" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>Название</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Название">
+            <MudText>@context.Name</MudText>
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+<MudFab Style="position: fixed; bottom: 0; right: 0; margin: 35px 25px;" Color="Color.Primary"
+        Icon="@Icons.Material.Filled.Add" OnClick="async () => await OpenWindow(false,null)"/>
+
+
+@code {
+    private string _searchString = "";
+    private List<MainCategory> _mainCategories = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _mainCategories = (await CategoryService.GetMainCategoriesAsync()).ToList();
+        await base.OnInitializedAsync();
+    }
+
+    private bool FilterFunc1(MainCategory element) => FilterFunc(element, _searchString);
+
+    private bool FilterFunc(MainCategory element, string? searchingString)
+    {
+        if (string.IsNullOrWhiteSpace(searchingString))
+            return true;
+        if (element.Name.Contains(searchingString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        return false;
+    }
+
+    private async Task RowClickEvent(TableRowClickEventArgs<MainCategory> tableRowClickEventArgs)
+    {
+        await OpenWindow(true,tableRowClickEventArgs.Item);
+    }
+
+    private async Task OpenWindow(bool isEdit, MainCategory? mainCategory)
+    {
+        var options = new DialogOptions {CloseOnEscapeKey = true};
+        var parameters = !isEdit ? new DialogParameters
+        {
+            {"SelectedMainCategoryName", null},
+            {"SelectedMainCategory", null}
+        } : new DialogParameters
+        {
+            {"SelectedMainCategoryName", mainCategory!.Name},
+            {"SelectedMainCategory", mainCategory}
+        };
+        var dialog = await DialogService.ShowAsync<MainCategoryWindow>("Категория", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            _mainCategories = (await CategoryService.GetMainCategoriesAsync()).ToList();
+            StateHasChanged();
+        }
+    }
+
+}

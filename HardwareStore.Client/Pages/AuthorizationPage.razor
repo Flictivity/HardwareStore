@@ -1,6 +1,7 @@
 ﻿@page "/authorization"
 @using Microsoft.AspNetCore.Components
 @using System.ComponentModel.DataAnnotations
+@using HardwareStore.Client.Data
 @using HardwareStore.Client.Data.Credentials
 @using HardwareStore.Client.ValidationErrorMessages
 @using IAuthorizationService = Domain.Services.IAuthorizationService
@@ -50,8 +51,9 @@
         var res = await AuthorizationService.AuthorizeAsync(_model.Email, _model.Password);
         if (res.Success)
         {
+            AppState.AuthorizedUser = res.User; 
             Snackbar.Add("Успешно", Severity.Success);
-            // Nav.NavigateTo("/cabinet");
+            NavigationManager.NavigateTo("/cabinet");
         }
         else
         {

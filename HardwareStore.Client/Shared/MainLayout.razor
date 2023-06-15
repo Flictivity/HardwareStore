@@ -1,4 +1,6 @@
-﻿@inherits LayoutComponentBase
+﻿@using HardwareStore.Client.Data
+@using HardwareStore.Domain.Enums
+@inherits LayoutComponentBase
 
 @inject NavigationManager NavigationManager;
 
@@ -31,6 +33,19 @@
             <MudTooltip Text="Профиль">
                 <MudIconButton OnClick="NavigateToCabinet" Size="Size.Medium" Color="Color.Inherit" Icon="@Icons.Material.Filled.AccountCircle" DisableElevation="true"/>
             </MudTooltip>
+
+            @if (AppState.AuthorizedUser is not null && AppState.AuthorizedUser.Role == Roles.Administrator)
+            {
+                <MudTooltip Text="Категории">
+                    <MudIconButton OnClick="OpenCategories" Size="Size.Medium" Icon="@Icons.Material.Filled.Category" Color="Color.Inherit"/>
+                </MudTooltip>
+                <MudTooltip Text="Подкатегории">
+                    <MudIconButton Size="Size.Medium" Icon="@Icons.Material.Filled.Apps" Color="Color.Inherit"/>
+                </MudTooltip>
+                <MudTooltip Text="Товары">
+                    <MudIconButton Size="Size.Medium" Icon="@Icons.Material.Filled.Chair" Color="Color.Inherit"/>
+                </MudTooltip>
+            }
         </div>
     </MudAppBar>
     <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
@@ -51,6 +66,16 @@
 
     private void NavigateToCabinet()
     {
-        NavigationManager.NavigateTo("/authorization");
+        if (!AppState.IsLogged)
+        {
+            NavigationManager.NavigateTo("/authorization");
+            return;
+        }
+        NavigationManager.NavigateTo("/cabinet");
+    }
+    
+    private void OpenCategories()
+    {
+        NavigationManager.NavigateTo("/main_categories");
     }
 }

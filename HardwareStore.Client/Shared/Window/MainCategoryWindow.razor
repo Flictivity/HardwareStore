@@ -1,0 +1,68 @@
+﻿@using HardwareStore.Client.ValidationErrorMessages
+@using HardwareStore.Domain.Models
+@using HardwareStore.Domain.Services
+
+@inject ICategoryService CategoryService;
+@inject ISnackbar Snackbar;
+
+<MudForm @bind-IsValid="_success">
+    <MudDialog DefaultFocus="DefaultFocus.LastChild">
+        <DialogContent>
+            <MudTextField Required="true" T="string" @bind-Value="_name"
+                          RequiredError="@RequiredErrorMessages.DefaultRequiredError" Label="Имя" InputType="InputType.Text"
+                          Class="mb-3"/>
+        </DialogContent>
+        <DialogActions>
+            <MudButton Class="mx-auto" Variant="Variant.Filled" Color="Color.Secondary" OnClick="Cancel">Отмена</MudButton>
+            <MudButton Class="mx-auto" Variant="Variant.Filled" Color="Color.Primary" OnClick="Submit" Disabled="@(!_success)">Сохранить</MudButton>
+        </DialogActions>
+    </MudDialog>
+</MudForm>
+
+@code {
+
+    [Parameter]
+    public string? SelectedMainCategoryName { get; set; }
+
+    [Parameter]
+    public MainCategory? SelectedMainCategory { get; set; }
+
+    private string _name = "";
+    private bool _isEditing;
+    private bool _success;
+
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; } = null!;
+
+    protected override Task OnInitializedAsync()
+    {
+        if (SelectedMainCategoryName is not null)
+        {
+            _isEditing = true;
+            _name = SelectedMainCategoryName;
+        }
+        return base.OnInitializedAsync();
+    }
+
+    private async Task Submit()
+    {
+        if (_isEditing)
+        {
+            await CategoryService.UpdateMainCategoryAsync(SelectedMainCategory!, _name);
+            Snackbar.Add("Успешно", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+            return;
+        }
+
+        var res = await CategoryService.CreateMainCategoryAsync(_name);
+
+        if (res.Success)
+        {
+            Snackbar.Add("Успешно", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        Snackbar.Add(res.Message, Severity.Error);
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

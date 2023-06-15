@@ -17,18 +17,18 @@ public class AuthorizationService : IAuthorizationService
         _encryptionService = encryptionService;
     }
 
-    public async Task<BaseResult> AuthorizeAsync(string email, string password)
+    public async Task<AuthorizationResult> AuthorizeAsync(string email, string password)
     {
         var user = await _userService.GetUserAsync(email);
 
         if (user is null)
-            return new BaseResult {Success = false, Message = UserErrorMessages.NotFound};
+            return new AuthorizationResult {Success = false, Message = UserErrorMessages.NotFound};
 
 
         var isPasswordValid = await _userService.CheckUserPasswordAsync(user.Id, password);
         return isPasswordValid
-            ? new BaseResult {Success = true}
-            : new BaseResult {Success = false, Message = UserErrorMessages.WrongPassword};
+            ? new AuthorizationResult {Success = true, User = user}
+            : new AuthorizationResult {Success = false, Message = UserErrorMessages.WrongPassword};
     }
 
     public async Task<BaseResult> RegisterAsync(string email, string password, string lastName, string firstName)

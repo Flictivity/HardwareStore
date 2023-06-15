@@ -50,6 +50,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddDataRepositories(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<ICategoryRepository, CategoryRepository>();
 
         return services;
     }

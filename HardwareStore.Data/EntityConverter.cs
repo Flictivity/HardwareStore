@@ -29,4 +29,21 @@ public static class EntityConverter
             Role = (int) user.Role
         };
     }
+
+    public static MainCategory ConvertMainCategory(MainCategoryDb mainCategory)
+    {
+        return new MainCategory
+        {
+            Id = mainCategory.Id,
+            Name = mainCategory.Name
+        };
+    }
+    
+    public static MainCategoryDb ConvertMainCategory(MainCategory mainCategory)
+    {
+        return new MainCategoryDb
+        {
+            Name = mainCategory.Name
+        };
+    }
 }
