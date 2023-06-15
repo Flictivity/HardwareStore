@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HardwareStore.Domain", "Har
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HardwareStore.Data", "HardwareStore.Data\HardwareStore.Data.csproj", "{B35D1E54-C6CB-4D3A-9967-11FC8CE7A757}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HardwareStore.GridFS", "HardwareStore.GridFS\HardwareStore.GridFS.csproj", "{AC71FE8C-E506-4118-878F-6A636240A64F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{B35D1E54-C6CB-4D3A-9967-11FC8CE7A757}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B35D1E54-C6CB-4D3A-9967-11FC8CE7A757}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B35D1E54-C6CB-4D3A-9967-11FC8CE7A757}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AC71FE8C-E506-4118-878F-6A636240A64F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC71FE8C-E506-4118-878F-6A636240A64F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC71FE8C-E506-4118-878F-6A636240A64F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC71FE8C-E506-4118-878F-6A636240A64F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
