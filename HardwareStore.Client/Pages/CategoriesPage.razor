@@ -1,0 +1,85 @@
+﻿@page "/categories"
+@using HardwareStore.Domain.Models
+@using HardwareStore.Domain.Services
+@using HardwareStore.Client.Shared.Window
+
+@inject ICategoryService CategoryService;
+@inject IDialogService DialogService;
+
+<PageTitle>Подкатегории</PageTitle>
+<MudTable Items="@_categories"
+          T="Category" OnRowClick="async e => await RowClickEvent(e)" Filter="new Func<Category, bool>(FilterFunc1)" Hover="true">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Подкатегории</MudText>
+        <MudSpacer/>
+        <MudTextField @bind-Value="_searchString" Placeholder="Поиск" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>Название</MudTh>
+        <MudTh>Категория</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Название">
+            <MudText>@context.Name</MudText>
+        </MudTd>
+        <MudTd DataLabel="Название">
+            <MudText>@context.MainCategory.Name</MudText>
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+<MudFab Style="position: fixed; bottom: 0; right: 0; margin: 35px 25px;" Color="Color.Primary"
+        Icon="@Icons.Material.Filled.Add" OnClick="async () => await OpenWindow(false, null)"/>
+
+
+@code {
+    private string _searchString = "";
+    private List<Category> _categories = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _categories = (await CategoryService.GetCategoriesAsync()).ToList();
+        await base.OnInitializedAsync();
+    }
+
+    private bool FilterFunc1(Category element) => FilterFunc(element, _searchString);
+
+    private bool FilterFunc(Category element, string? searchingString)
+    {
+        if (string.IsNullOrWhiteSpace(searchingString))
+            return true;
+        if (element.Name.Contains(searchingString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.MainCategory.Name.Contains(searchingString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        return false;
+    }
+
+    private async Task RowClickEvent(TableRowClickEventArgs<Category> tableRowClickEventArgs)
+    {
+        await OpenWindow(true, tableRowClickEventArgs.Item);
+    }
+
+    private async Task OpenWindow(bool isEdit, Category? category)
+    {
+        var options = new DialogOptions {CloseOnEscapeKey = true};
+        var parameters = !isEdit ? new DialogParameters
+        {
+            {"SelectedCategoryName", null},
+            {"SelectedCategory", null}
+        } : new DialogParameters
+        {
+            {"SelectedCategoryName", category!.Name},
+            {"SelectedCategory", category}
+        };
+        var dialog = await DialogService.ShowAsync<CategoryWindow>("Категория", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            _categories = (await CategoryService.GetCategoriesAsync()).ToList();
+            StateHasChanged();
+        }
+    }
+
+}

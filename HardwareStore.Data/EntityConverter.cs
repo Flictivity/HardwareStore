@@ -46,4 +46,22 @@ public static class EntityConverter
             Name = mainCategory.Name
         };
     }
+    
+    public static CategoryDb ConvertCategory(Category category)
+    {
+        return new CategoryDb
+        {
+            Name = category.Name,
+            MainCategoryId = category.MainCategory.Id
+        };
+    }
+    
+    public static Category ConvertCategory(CategoryDb category)
+    {
+        return new Category
+        {
+            Id = category.Id,
+            Name = category.Name
+        };
+    }
 }

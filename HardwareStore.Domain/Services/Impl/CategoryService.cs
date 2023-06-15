@@ -23,6 +23,17 @@ public class CategoryService : ICategoryService
         return await _categoryRepository.UpdateMainCategory(newMainCategory);
     }
 
+    public async Task<BaseResult> UpdateCategoryAsync(Category category, string name, MainCategory mainCategory)
+    {
+        var newCategory = new Category
+        {
+            Id = category.Id,
+            Name = name,
+            MainCategory = mainCategory
+        };
+        return await _categoryRepository.UpdateCategory(newCategory);
+    }
+
     public async Task<BaseResult> CreateMainCategoryAsync(string name)
     {
         var newMainCategory = new MainCategory {Name = name};
@@ -33,5 +44,18 @@ public class CategoryService : ICategoryService
     public async Task<IEnumerable<MainCategory>> GetMainCategoriesAsync()
     {
         return await _categoryRepository.GetMainCategories();
+    }
+
+    public async Task<IEnumerable<Category>> GetCategoriesAsync()
+    {
+        return await _categoryRepository.GetCategories();
+    }
+
+    public async Task<BaseResult> CreateCategoryAsync(string name, MainCategory mainCategory)
+    {
+        var newCategory = new Category {Name = name, MainCategory = mainCategory};
+        
+        await _categoryRepository.CreateCategory(newCategory);
+        return new BaseResult {Success = true};
     }
 }

@@ -37,10 +37,10 @@
             @if (AppState.AuthorizedUser is not null && AppState.AuthorizedUser.Role == Roles.Administrator)
             {
                 <MudTooltip Text="Категории">
-                    <MudIconButton OnClick="OpenCategories" Size="Size.Medium" Icon="@Icons.Material.Filled.Category" Color="Color.Inherit"/>
+                    <MudIconButton OnClick="OpenMainCategories" Size="Size.Medium" Icon="@Icons.Material.Filled.Category" Color="Color.Inherit"/>
                 </MudTooltip>
                 <MudTooltip Text="Подкатегории">
-                    <MudIconButton Size="Size.Medium" Icon="@Icons.Material.Filled.Apps" Color="Color.Inherit"/>
+                    <MudIconButton OnClick="OpenCategories" Size="Size.Medium" Icon="@Icons.Material.Filled.Apps" Color="Color.Inherit"/>
                 </MudTooltip>
                 <MudTooltip Text="Товары">
                     <MudIconButton Size="Size.Medium" Icon="@Icons.Material.Filled.Chair" Color="Color.Inherit"/>
@@ -74,8 +74,13 @@
         NavigationManager.NavigateTo("/cabinet");
     }
     
-    private void OpenCategories()
+    private void OpenMainCategories()
     {
         NavigationManager.NavigateTo("/main_categories");
+    }
+    
+    private void OpenCategories()
+    {
+        NavigationManager.NavigateTo("/categories");
     }
 }

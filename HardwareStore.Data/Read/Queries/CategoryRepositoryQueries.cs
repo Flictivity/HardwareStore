@@ -3,5 +3,11 @@
 public class CategoryRepositoryQueries
 {
     public const string GetMainCategories = @"SELECT * FROM public.main_category";
-    public const string UpdateCategory = @"UPDATE public.main_category SET name = @name WHERE id = @id";
+    public const string GetCategories = @"SELECT * FROM public.category";
+    public const string UpdateMainCategory = @"UPDATE public.main_category SET name = @name WHERE id = @id";
+
+    public const string UpdateCategory =
+        @"UPDATE public.category SET name = @name, main_category_id = @mainCategoryId WHERE id = @id";
+
+    public const string GetMainCategoryById = @"SELECT * FROM public.main_category m WHERE id = @id";
 }
