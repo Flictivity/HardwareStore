@@ -2,11 +2,11 @@
 
 namespace HardwareStore.Data.Read;
 
-public class StoreReadonlyContext : IDisposable, IAsyncDisposable
+public class HardwareStoreReadonlyContext : IDisposable, IAsyncDisposable
 {
     public NpgsqlConnection Connection { get; }
 
-    public StoreReadonlyContext(string connectionString)
+    public HardwareStoreReadonlyContext(string connectionString)
     {
         Connection = new NpgsqlConnection(connectionString);
     }

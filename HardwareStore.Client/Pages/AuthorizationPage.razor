@@ -1,0 +1,61 @@
+﻿@page "/authorization"
+@using Microsoft.AspNetCore.Components
+@using System.ComponentModel.DataAnnotations
+@using HardwareStore.Client.Data.Credentials
+@using HardwareStore.Client.ValidationErrorMessages
+@using IAuthorizationService = Domain.Services.IAuthorizationService
+
+@inject NavigationManager NavigationManager;
+@inject IAuthorizationService AuthorizationService;
+@inject ISnackbar Snackbar;
+
+<PageTitle>Авторизация</PageTitle>
+<MudCard>
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudText Typo="Typo.h5">Для входа введите email адресс и пароль</MudText>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudForm Model="@_model" @ref="@_form" @bind-IsValid="@_success">
+        <MudCardContent>
+            <MudTextField T="string" @bind-Value="_model.Email" InputType="InputType.Email" Label="Почта" Required="true"
+                          RequiredError="@RequiredErrorMessages.EmailError"
+                          Validation="@(new EmailAddressAttribute {ErrorMessage = UserErrorMessages.WrongEmail})" 
+                          Class="mb-3"/>
+            <MudTextField T="string" InputType="InputType.Password" @bind-Value="_model.Password"
+                          Label="Пароль" Required="true"
+                          RequiredError="@RequiredErrorMessages.PasswordError" Class="mb-3"/>
+            <MudText Align="Align.Center" Typo="Typo.subtitle2">При входе в систему вы принимаете условия пользовательского соглашения</MudText>
+        </MudCardContent>
+        <MudCardActions Class="d-flex flex-column">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!_success)" Class="mb-3 mx-auto"
+                       OnClick="async () => await Authorization()">
+                Авторизация
+            </MudButton>
+            <MudLink Class="mt-3" Typo="Typo.subtitle2" Href="/registration"
+                                 Underline="Underline.Hover">
+                            Нет аккаунта?
+                        </MudLink>
+        </MudCardActions>
+    </MudForm>
+</MudCard>
+
+@code {
+    private bool _success;
+    private MudForm? _form;
+    private readonly LoginCredentials _model = new();
+    
+    private async Task Authorization()
+    {
+        var res = await AuthorizationService.AuthorizeAsync(_model.Email, _model.Password);
+        if (res.Success)
+        {
+            Snackbar.Add("Успешно", Severity.Success);
+            // Nav.NavigateTo("/cabinet");
+        }
+        else
+        {
+            Snackbar.Add(res.Message, Severity.Error);
+        }
+    }
+}

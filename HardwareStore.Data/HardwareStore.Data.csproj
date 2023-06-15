@@ -24,11 +24,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Read\Queries" />
-    <Folder Include="Repositories" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\HardwareStore.Domain\HardwareStore.Domain.csproj" />
   </ItemGroup>
 

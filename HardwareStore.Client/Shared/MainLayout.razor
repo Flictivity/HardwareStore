@@ -1,5 +1,7 @@
 ﻿@inherits LayoutComponentBase
 
+@inject NavigationManager NavigationManager;
+
 <PageTitle>Магазин бытовой техники Атлант</PageTitle>
 
 <MudThemeProvider IsDarkMode="true"/>
@@ -27,7 +29,7 @@
                 <MudIconButton Size="Size.Medium" Icon="@Icons.Material.Filled.ShoppingBag" Color="Color.Inherit"/>
             </MudTooltip>
             <MudTooltip Text="Профиль">
-                <MudIconButton Size="Size.Medium" Color="Color.Inherit" Icon="@Icons.Material.Filled.AccountCircle" DisableElevation="true"/>
+                <MudIconButton OnClick="NavigateToCabinet" Size="Size.Medium" Color="Color.Inherit" Icon="@Icons.Material.Filled.AccountCircle" DisableElevation="true"/>
             </MudTooltip>
         </div>
     </MudAppBar>
@@ -47,4 +49,8 @@
         _drawerOpen = !_drawerOpen;
     }
 
+    private void NavigateToCabinet()
+    {
+        NavigationManager.NavigateTo("/authorization");
+    }
 }

@@ -19,7 +19,7 @@ public class InitialMigration : Migration
         Create.Table("user")
             .WithColumn("id").AsInt64().PrimaryKey().Identity()
             .WithColumn("email").AsString(50).NotNullable()
-            .WithColumn("password").AsString(50).NotNullable()
+            .WithColumn("password").AsString().NotNullable()
             .WithColumn("last_name").AsString(150).NotNullable()
             .WithColumn("first_name").AsString(150).NotNullable();
 

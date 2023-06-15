@@ -16,32 +16,27 @@ public partial class HardwareStoreContext : DbContext
     {
     }
 
-    public virtual DbSet<CategoryDb> Categories { get; set; }
+    public virtual DbSet<CategoryDb> Categories { get; set; } = null!;
 
-    public virtual DbSet<CategoryTitleDb> CategoryTitles { get; set; }
+    public virtual DbSet<CategoryTitleDb> CategoryTitles { get; set; } = null!;
 
-    public virtual DbSet<CategoryTitleValueDb> CategoryTitleValues { get; set; }
+    public virtual DbSet<CategoryTitleValueDb> CategoryTitleValues { get; set; } = null!;
 
-    public virtual DbSet<MainCategoryDb> MainCategories { get; set; }
+    public virtual DbSet<MainCategoryDb> MainCategories { get; set; } = null!;
 
-    public virtual DbSet<OrderDb> Orders { get; set; }
+    public virtual DbSet<OrderDb> Orders { get; set; } = null!;
 
-    public virtual DbSet<OrderProductDb> OrderProducts { get; set; }
+    public virtual DbSet<OrderProductDb> OrderProducts { get; set; } = null!;
 
-    public virtual DbSet<ProductDb> Products { get; set; }
+    public virtual DbSet<ProductDb> Products { get; set; } = null!;
 
-    public virtual DbSet<ProductImageDb> ProductImages { get; set; }
+    public virtual DbSet<ProductImageDb> ProductImages { get; set; } = null!;
 
-    public virtual DbSet<UserDb> Users { get; set; }
+    public virtual DbSet<UserDb> Users { get; set; } = null!;
 
-    public virtual DbSet<UserCartDb> UserCarts { get; set; }
+    public virtual DbSet<UserCartDb> UserCarts { get; set; } = null!;
 
-    public virtual DbSet<UserFavoriteDb> UserFavorites { get; set; }
-    
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=hardware_store;Username=postgres;Password=postgres;");
+    public virtual DbSet<UserFavoriteDb> UserFavorites { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

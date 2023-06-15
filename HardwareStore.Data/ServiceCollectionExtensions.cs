@@ -1,7 +1,9 @@
 ﻿using FluentMigrator.Runner;
 using HardwareStore.Data.Migrations;
 using HardwareStore.Data.Read;
+using HardwareStore.Data.Repositories;
 using HardwareStore.Data.Write;
+using HardwareStore.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,7 +18,7 @@ public static class ServiceCollectionExtensions
         var connectionString = configuration.GetConnectionString("DefaultConnection")!;
 
         Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
-        services.AddTransient(_ => new StoreReadonlyContext(connectionString));
+        services.AddTransient(_ => new HardwareStoreReadonlyContext(connectionString));
 
         services.AddDbContext<HardwareStoreContext>(options =>
         {
@@ -42,6 +44,13 @@ public static class ServiceCollectionExtensions
                 .For.Migrations());
 
         services.AddHostedService<MigrationHostedService>();
+        return services;
+    }
+
+    public static IServiceCollection AddDataRepositories(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddScoped<IUserRepository, UserRepository>();
+
         return services;
     }
 }
