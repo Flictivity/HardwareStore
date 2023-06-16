@@ -1,0 +1,126 @@
+﻿@page "/category/{SelectedCategoryId:long}"
+@using HardwareStore.Client.ValidationErrorMessages
+@using HardwareStore.Domain.Models
+@using HardwareStore.Domain.Services
+@using HardwareStore.Client.Data.Credentials
+
+@inject ICategoryService CategoryService;
+@inject ISnackbar Snackbar;
+@inject NavigationManager NavigationManager;
+
+<MudForm @bind-IsValid="_success">
+    <MudTextField Required="true" T="string" @bind-Value="_model.Name"
+                  RequiredError="@RequiredErrorMessages.DefaultRequiredError" Label="Имя" InputType="InputType.Text"
+                  Class="mb-3"/>
+    <MudSelect T="MainCategory" @bind-Value="_model.MainCategory" ToStringFunc="@_converter" Label="Категория"
+               Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+        @foreach (MainCategory mainCategory in _mainCategories)
+        {
+            <MudSelectItem Value="mainCategory"/>
+        }
+    </MudSelect>
+    <MudTable Items="@_model.Titles"
+              T="CategoryTitle" Hover="true"
+              Class="mt-5">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Характеристики</MudText>
+            <MudSpacer/>
+            <MudTextField T="string" @bind-Value="_newTitleName"></MudTextField>
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="AddNewTitle">Добавить</MudButton>
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh>Название</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Название">
+                <MudTextField T="string" @bind-Value="@context.Name"></MudTextField>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+    <MudContainer Class="d-flex justify-content-center mt-5">
+        <MudButton Class="mr-5" Variant="Variant.Filled" Color="Color.Secondary" OnClick="Cancel">Отмена</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Submit" Disabled="@(!_success)">Сохранить</MudButton>
+    </MudContainer>
+</MudForm>
+
+@code {
+    [Parameter]
+    public long SelectedCategoryId { get; set; }
+
+    private CategoryCredentials _model = new();
+    private bool _isEditing;
+    private bool _success;
+    private Category _selectedCategory = null!;
+
+    private List<MainCategory> _mainCategories = new();
+
+    private readonly Func<MainCategory?, string?> _converter = p => p?.Name;
+
+    private string _newTitleName = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (SelectedCategoryId != 0)
+        {
+            var category = await CategoryService.GetCategory(SelectedCategoryId);
+            if (category is null)
+            {
+                Snackbar.Add("Не удалось найти категорию", Severity.Error);
+                return;
+            }
+            _selectedCategory = category;
+            _isEditing = true;
+            _model.Name = category.Name;
+            _model.MainCategory = category.MainCategory;
+            _model.Titles = (await CategoryService.GetTitles(SelectedCategoryId)).ToList();
+        }
+        _mainCategories = (await CategoryService.GetMainCategoriesAsync()).ToList();
+        await base.OnInitializedAsync();
+    }
+
+    private async Task Submit()
+    {
+        if (_isEditing)
+        {
+            await CategoryService.UpdateCategoryAsync(_selectedCategory, _model.Name, _model.MainCategory, _model.Titles);
+            Snackbar.Add("Успешно", Severity.Success);
+            NavigationManager.NavigateTo("/categories");
+            return;
+        }
+
+        var res = await CategoryService.CreateCategoryAsync(_model.Name, _model.MainCategory, _model.Titles);
+
+        if (res.Success)
+        {
+            Snackbar.Add("Успешно", Severity.Success);
+            NavigationManager.NavigateTo("/categories");
+        }
+        Snackbar.Add(res.Message, Severity.Error);
+    }
+
+    private void Cancel() => NavigationManager.NavigateTo("/categories");
+
+    private void AddNewTitle()
+    {
+        if (_newTitleName == "" && !_success)
+            Snackbar.Add("Необходимо правильно заполнить данные", Severity.Info);
+        CategoryTitle newTitle;
+        if (_isEditing)
+        {
+            newTitle = new CategoryTitle
+            {
+                Category = _selectedCategory,
+                Name = _newTitleName
+            };
+        }
+        else
+        {
+            newTitle = new CategoryTitle
+            {
+                Name = _newTitleName
+            };
+        }
+        _model.Titles.Add(newTitle);
+    }
+
+}

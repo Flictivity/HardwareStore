@@ -1,10 +1,9 @@
 ﻿@page "/categories"
 @using HardwareStore.Domain.Models
 @using HardwareStore.Domain.Services
-@using HardwareStore.Client.Shared.Window
 
 @inject ICategoryService CategoryService;
-@inject IDialogService DialogService;
+@inject NavigationManager NavigationManager;
 
 <PageTitle>Подкатегории</PageTitle>
 <MudTable Items="@_categories"
@@ -29,7 +28,7 @@
 </MudTable>
 
 <MudFab Style="position: fixed; bottom: 0; right: 0; margin: 35px 25px;" Color="Color.Primary"
-        Icon="@Icons.Material.Filled.Add" OnClick="async () => await OpenWindow(false, null)"/>
+        Icon="@Icons.Material.Filled.Add" OnClick="() => OpenCategoryPage(false, 0)"/>
 
 
 @code {
@@ -57,29 +56,12 @@
 
     private async Task RowClickEvent(TableRowClickEventArgs<Category> tableRowClickEventArgs)
     {
-        await OpenWindow(true, tableRowClickEventArgs.Item);
+        OpenCategoryPage(true, tableRowClickEventArgs.Item.Id);
     }
 
-    private async Task OpenWindow(bool isEdit, Category? category)
+    private void OpenCategoryPage(bool isEdit, long categoryId)
     {
-        var options = new DialogOptions {CloseOnEscapeKey = true};
-        var parameters = !isEdit ? new DialogParameters
-        {
-            {"SelectedCategoryName", null},
-            {"SelectedCategory", null}
-        } : new DialogParameters
-        {
-            {"SelectedCategoryName", category!.Name},
-            {"SelectedCategory", category}
-        };
-        var dialog = await DialogService.ShowAsync<CategoryWindow>("Категория", parameters, options);
-        var result = await dialog.Result;
-
-        if (!result.Canceled)
-        {
-            _categories = (await CategoryService.GetCategoriesAsync()).ToList();
-            StateHasChanged();
-        }
+        NavigationManager.NavigateTo($@"/category/{categoryId}");
     }
 
 }

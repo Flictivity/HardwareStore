@@ -23,15 +23,16 @@ public class CategoryService : ICategoryService
         return await _categoryRepository.UpdateMainCategory(newMainCategory);
     }
 
-    public async Task<BaseResult> UpdateCategoryAsync(Category category, string name, MainCategory mainCategory)
+    public async Task<BaseResult> UpdateCategoryAsync(Category category, string name, MainCategory mainCategory,
+        List<CategoryTitle> titles)
     {
         var newCategory = new Category
         {
             Id = category.Id,
             Name = name,
-            MainCategory = mainCategory
+            MainCategory = mainCategory,
         };
-        return await _categoryRepository.UpdateCategory(newCategory);
+        return await _categoryRepository.UpdateCategory(newCategory, titles);
     }
 
     public async Task<BaseResult> CreateMainCategoryAsync(string name)
@@ -51,11 +52,21 @@ public class CategoryService : ICategoryService
         return await _categoryRepository.GetCategories();
     }
 
-    public async Task<BaseResult> CreateCategoryAsync(string name, MainCategory mainCategory)
+    public Task<Category?> GetCategory(long id)
+    {
+        return _categoryRepository.GetCategory(id);
+    }
+
+    public async Task<BaseResult> CreateCategoryAsync(string name, MainCategory mainCategory,
+        List<CategoryTitle> titles)
     {
         var newCategory = new Category {Name = name, MainCategory = mainCategory};
-        
-        await _categoryRepository.CreateCategory(newCategory);
+        await _categoryRepository.CreateCategory(newCategory, titles);
         return new BaseResult {Success = true};
+    }
+
+    public async Task<IEnumerable<CategoryTitle>> GetTitles(long categoryId)
+    {
+        return await _categoryRepository.GetTitles(categoryId);
     }
 }

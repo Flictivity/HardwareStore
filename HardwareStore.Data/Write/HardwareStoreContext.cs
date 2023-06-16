@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using HardwareStore.Data.Models;
+﻿using HardwareStore.Data.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace HardwareStore.Data.Write;

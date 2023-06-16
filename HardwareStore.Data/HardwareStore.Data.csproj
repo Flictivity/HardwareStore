@@ -27,4 +27,8 @@
     <ProjectReference Include="..\HardwareStore.Domain\HardwareStore.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Tools" />
+  </ItemGroup>
+
 </Project>

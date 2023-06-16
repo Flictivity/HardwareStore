@@ -61,7 +61,16 @@ public static class EntityConverter
         return new Category
         {
             Id = category.Id,
-            Name = category.Name
+            Name = category.Name,
+        };
+    }
+    
+    public static CategoryTitle ConvertCategoryTitle(CategoryTitleDb categoryTitle)
+    {
+        return new CategoryTitle
+        {
+            Id = categoryTitle.Id,
+            Name = categoryTitle.Name,
         };
     }
 }
