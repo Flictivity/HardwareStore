@@ -43,7 +43,7 @@
                     <MudIconButton OnClick="OpenCategories" Size="Size.Medium" Icon="@Icons.Material.Filled.Apps" Color="Color.Inherit"/>
                 </MudTooltip>
                 <MudTooltip Text="Товары">
-                    <MudIconButton Size="Size.Medium" Icon="@Icons.Material.Filled.Chair" Color="Color.Inherit"/>
+                    <MudIconButton OnClick="OpenProducts" Size="Size.Medium" Icon="@Icons.Material.Filled.Chair" Color="Color.Inherit"/>
                 </MudTooltip>
             }
         </div>
@@ -82,5 +82,9 @@
     private void OpenCategories()
     {
         NavigationManager.NavigateTo("/categories");
+    }
+    private void OpenProducts()
+    {
+        NavigationManager.NavigateTo("/products");
     }
 }
