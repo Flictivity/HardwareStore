@@ -11,4 +11,6 @@ public class CategoryTitleValueDb
     public string Value { get; set; } = null!;
 
     public virtual CategoryTitleDb CategoryTitleDb { get; set; } = null!;
+
+    public virtual ProductDb ProductDb { get; set; } = null!;
 }

@@ -1,7 +1,6 @@
 ﻿using HardwareStore.Domain.Enums;
 using HardwareStore.Domain.ErrorMessages;
 using HardwareStore.Domain.Models;
-using HardwareStore.Domain.Repositories;
 using HardwareStore.Domain.Results;
 
 namespace HardwareStore.Domain.Services.Impl;

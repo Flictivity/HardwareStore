@@ -1,6 +1,7 @@
 using HardwareStore.Data;
 using HardwareStore.Domain.Extensions;
 using HardwareStore.Domain.Settings;
+using HardwareStore.GridFS;
 using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,7 +16,8 @@ builder.Services
     .RegisterDatabaseSources(builder.Configuration)
     .AddDomainServices(builder.Configuration)
     .AddDataRepositories(builder.Configuration)
-    .AddMigrations(builder.Configuration);
+    .AddMigrations(builder.Configuration)
+    .AddFileSystem(builder.Configuration);
 
 
 var app = builder.Build();

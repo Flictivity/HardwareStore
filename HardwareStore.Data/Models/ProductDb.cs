@@ -14,6 +14,8 @@ public class ProductDb
 
     public string? Description { get; set; }
 
+    public virtual ICollection<CategoryTitleValueDb> CategoryTitleValues { get; set; } = new List<CategoryTitleValueDb>();
+
     public virtual ICollection<OrderProductDb> OrderProducts { get; set; } = new List<OrderProductDb>();
 
     public virtual ICollection<ProductImageDb> ProductImages { get; set; } = new List<ProductImageDb>();

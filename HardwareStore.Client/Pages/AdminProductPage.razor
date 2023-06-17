@@ -1,0 +1,159 @@
+﻿@page "/admin_product/{ProductId:long}"
+
+@inject IProductService ProductService;
+@inject ICategoryService CategoryService;
+@inject IImageLoadingService ImageLoadingService; 
+@inject ISnackbar Snackbar;
+
+@using HardwareStore.Domain.Models
+@using HardwareStore.Domain.Services
+@using HardwareStore.Client.ValidationErrorMessages
+
+@if (_product is null)
+{
+    <h1>Нам не удалось найти то, что вы искали...</h1>
+    return;
+}
+<MudTabs Rounded="true" Border="false" PanelClass="pa-6" ApplyEffectsToContainer="true">
+    <MudTabPanel Text="Основная информация">
+        <MudStack>
+            <MudSelect T="Category" Value="_category" ValueChanged="async (e)  => await UpdateCharacteristics(e)" ToStringFunc="@_converter" Label="Категория"
+                       Variant="Variant.Text" AnchorOrigin="Origin.BottomCenter">
+                @foreach (Category mainCategory in _categories)
+                {
+                    <MudSelectItem Value="mainCategory"/>
+                }
+            </MudSelect>
+            <MudTextField Class="mt-1 mb-2" Label="Наименование" T="string" @bind-Value="_product.Name"></MudTextField>
+            <MudTextField Label="Код" T="long" @bind-Value="_product.Code"></MudTextField>
+            <MudTextField Class="mb-2" Label="Стоимость" T="long" @bind-Value="_product.Cost"></MudTextField>
+            <MudNumericField Min="1" Class="mb-5" Label="Количество" @bind-Value="_product.Count"></MudNumericField>
+            <MudTextField Variant="Variant.Text" Lines="2" Label="Описание" T="string" @bind-Value="_product.Description"/>
+        </MudStack>
+    </MudTabPanel>
+    <MudTabPanel Text="Характеристики">
+        <MudStack Class="d-flex flex-column pa-0" Spacing="2">
+            <MudText Color="Color.Info" Align="Align.Start" Class="mt-3 d-flex">
+                <b>Характеристики:</b>
+            </MudText>
+            @foreach (Characteristic characteristic in _product.Characteristics)
+            {
+                <MudTextField Label="@characteristic.Name" T="string" @bind-Value="characteristic.Value" Required="true"
+                              RequiredError="@RequiredErrorMessages.DefaultRequiredError"/>
+            }
+        </MudStack>
+    </MudTabPanel>
+    <MudTabPanel Text="Изображения">
+        <MudGrid Class="d-flex align-center" Justify="Justify.Center">
+            @foreach (Image image in _product.Images)
+            {
+                var base64ImageString = Convert.ToBase64String(image.Source);
+
+                var convertedSource = $"data:image;base64,{base64ImageString}";
+                <MudItem>
+                    <MudStack Spacing="3">
+                        <MudImage Width="200" Height="200" Src="@convertedSource"/>
+                        <MudFab OnClick="async () => await RemoveImage(image)" Icon="@Icons.Material.Filled.Delete" Class="mx-auto" Color="Color.Error"/>
+                    </MudStack>
+                </MudItem>
+            }
+
+            <MudItem>
+                <MudFileUpload T="IBrowserFile" OnFilesChanged="@HandleFileUpload" Accept=".png, .jpg, .jpeg" SuppressOnChangeWhenInvalid>
+                    <ButtonTemplate>
+                        <MudButton HtmlTag="label"
+                                   Variant="Variant.Filled"
+                                   Color="Color.Info"
+                                   StartIcon="@Icons.Material.Filled.CloudUpload"
+                                   for="@context">
+                            Загрузить файл
+                        </MudButton>
+                    </ButtonTemplate>
+                </MudFileUpload>
+            </MudItem>
+        </MudGrid>
+    </MudTabPanel>
+</MudTabs>
+<MudStack Row="true" Class="d-flex mx-auto justify-content-center">
+    <MudButton Variant="Variant.Filled" Color="Color.Error">Удалить</MudButton>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="async ()=> await SaveProduct()">Cохранить</MudButton>
+</MudStack>
+
+@code {
+
+    [Parameter]
+    public long ProductId { get; set; }
+
+    private Product? _product = new();
+
+    private bool _isEditing;
+
+    private readonly Func<Category?, string?> _converter = p => p?.Name;
+    private Category _category = new();
+
+    private List<Category> _categories = new();
+    
+    protected override async Task OnInitializedAsync()
+    {
+        _categories = (await CategoryService.GetCategoriesAsync()).ToList();
+        _category = _categories.First();
+        
+        if (ProductId != 0)
+        {
+            _isEditing = true;
+            _product = await ProductService.GetProduct(ProductId);
+            if (_product is null)
+                return;
+            _category = _product.Category;
+        }
+        else
+        {
+            _product!.Characteristics = (await ProductService.GetCharacteristics(_category.Id)).ToList();
+        }
+        
+        await base.OnInitializedAsync();
+    }
+
+    private async Task HandleFileUpload(InputFileChangeEventArgs e)
+    {
+        using var stream = e.File.OpenReadStream(2000000);
+        var memoryStream = new MemoryStream();
+        await stream.CopyToAsync(memoryStream);
+
+        var imageDataBytes = memoryStream.ToArray();
+        var imageId = await ImageLoadingService.UploadImageAsync(e.File.Name, e.File.OpenReadStream());
+        
+        _product?.Images.Add(new Image
+        {
+            Source = imageDataBytes,
+            MongoId = imageId
+        });
+    }
+
+    private async Task RemoveImage(Image image)
+    {
+        _product?.Images.Remove(image);
+        await ImageLoadingService.DeleteImage(image.MongoId);
+    }
+
+    private async Task SaveProduct()
+    {
+        if(_product is null)
+            return;
+        ;
+        if (!_isEditing)
+        {
+            var res = await ProductService.CreateProduct(_product);
+            if (res.Success)
+            {
+                Snackbar.Add("Успешно",Severity.Success);
+            }
+        }
+    }
+
+    private async Task UpdateCharacteristics(Category selectedCategory)
+    {
+        _category = selectedCategory;
+        _product!.Characteristics = (await ProductService.GetCharacteristics(_category.Id)).ToList();
+    }
+}

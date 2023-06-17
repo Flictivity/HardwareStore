@@ -73,4 +73,17 @@ public static class EntityConverter
             Name = categoryTitle.Name,
         };
     }
+
+    public static Product ConvertProduct(ProductDb res)
+    {
+        return new Product
+        {
+            Id = res.Id,
+            Name = res.Name,
+            Cost = res.Cost,
+            Count = res.Count,
+            Code = res.Code,
+            Description = res.Description
+        };
+    }
 }

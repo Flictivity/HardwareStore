@@ -1,5 +1,4 @@
-﻿using HardwareStore.Domain.ErrorMessages;
-using HardwareStore.Domain.FileSystem;
+﻿using HardwareStore.Domain.FileSystem;
 using HardwareStore.Domain.Results;
 
 namespace HardwareStore.Domain.Services.Impl;
@@ -16,17 +15,21 @@ public class ImageLoadingService : IImageLoadingService
         _fileStorage = fileStorage;
     }
 
-    public async Task<BaseResult> UploadImageAsync(string filename, Stream file)
+    public async Task<string> UploadImageAsync(string filename, Stream file)
     {
         if (!AcceptedFileExtensions.Contains(Path.GetExtension(filename)))
-            return new BaseResult { Success = false, Message = ImageUploadErrorMessages.IncorrectExtension };
-        await _fileStorage.UploadFileAsync(filename, file, true);
-        return new BaseResult { Success = true };
+            return string.Empty;
+        return await _fileStorage.UploadFile(filename, file);
     }
 
-    public async Task<Stream> GetImageForExamQuestion(string? filename)
+    public async Task<byte[]> GetImageAsBytes(string? imageId)
     {
-        filename ??= DefaultDisplayImageName;
-        return await _fileStorage.GetFileReadStreamAsync(filename);
+        imageId ??= DefaultDisplayImageName;
+        return await _fileStorage.DownloadFileAsBytes(imageId);
+    }
+
+    public async Task<BaseResult> DeleteImage(string id)
+    {
+        return await _fileStorage.DeleteFile(id);
     }
 }

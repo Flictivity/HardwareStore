@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\HardwareStore.Data\HardwareStore.Data.csproj" />
+    <ProjectReference Include="..\HardwareStore.GridFS\HardwareStore.GridFS.csproj" />
   </ItemGroup>
 
 </Project>

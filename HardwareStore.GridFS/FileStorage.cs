@@ -1,5 +1,6 @@
-﻿using HardwareStore.Domain.Exceptions;
-using HardwareStore.Domain.FileSystem;
+﻿using HardwareStore.Domain.FileSystem;
+using HardwareStore.Domain.Results;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.GridFS;
 
@@ -15,21 +16,23 @@ public class FileStorage : IFileStorage
         _gridFs = new GridFSBucket(connection.Database);
     }
 
-    public async Task UploadFileAsync(string filename, Stream file, bool mustBeSingle = false)
+    public async Task<string> UploadFile(string fileName, Stream stream)
     {
-        if (mustBeSingle)
-            await DeleteExistingFiles(filename);
-        await _gridFs.UploadFromStreamAsync(filename, file);
+        return (await _gridFs.UploadFromStreamAsync(fileName, stream)).ToString();
     }
 
-    public async Task<Stream> GetFileReadStreamAsync(string filename)
+    public async Task<byte[]> DownloadFileAsBytes(string id)
     {
-        var file =
-            await (await _gridFs.FindAsync(new ExpressionFilterDefinition<GridFSFileInfo>(x => x.Filename == filename)))
-                .SingleOrDefaultAsync() ?? throw new NotFoundException();
-        return await _gridFs.OpenDownloadStreamAsync(file.Id);
+        return await _gridFs.DownloadAsBytesAsync(id);
     }
-    
+
+    public async Task<BaseResult> DeleteFile(string id)
+    {
+        
+        await _gridFs.DeleteAsync(ObjectId.Parse(id));
+        return new BaseResult {Success = true};
+    }
+
     private async Task DeleteExistingFiles(string filename)
     {
         var existing = await _gridFs.FindAsync(Builders<GridFSFileInfo>.Filter.Eq(x => x.Filename, filename));

@@ -1,5 +1,5 @@
-﻿using HardwareStore.Data.Models;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using HardwareStore.Data.Models;
 
 namespace HardwareStore.Data.Write;
 
@@ -83,6 +83,11 @@ public partial class HardwareStoreContext : DbContext
                 .HasForeignKey(d => d.CategoryTitleId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_category_title_value_category_title_id_category_title_id");
+
+            entity.HasOne(d => d.ProductDb).WithMany(p => p.CategoryTitleValues)
+                .HasForeignKey(d => d.ProductId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_category_title_value_product_id_product_id");
         });
 
         modelBuilder.Entity<MainCategoryDb>(entity =>

@@ -1,5 +1,4 @@
 ﻿using HardwareStore.Domain.Models;
-using HardwareStore.Domain.Results;
 
 namespace HardwareStore.Domain.Services;
 

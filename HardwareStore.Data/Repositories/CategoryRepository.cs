@@ -28,9 +28,9 @@ public class CategoryRepository : ICategoryRepository
 
     public async Task CreateCategory(Category category, List<CategoryTitle> titles)
     {
-        _context.Categories.Add(EntityConverter.ConvertCategory(category));
+        var createdCategory = _context.Categories.Add(EntityConverter.ConvertCategory(category));
         await _context.SaveChangesAsync();
-        var categoryId = category.Id;
+        var categoryId = createdCategory.Entity.Id;
         foreach (var title in titles)
         {
             var newCategoryTitleDb = new CategoryTitleDb
