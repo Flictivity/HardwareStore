@@ -8,4 +8,5 @@ public interface IProductService
     Task<Product?> GetProduct(long id);
     Task<IEnumerable<Characteristic>> GetCharacteristics(long categoryId);
     Task<BaseResult> CreateProduct(Product product);
+    Task<IEnumerable<Product>> GetProducts();
 }

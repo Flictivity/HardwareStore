@@ -23,7 +23,7 @@ public class FileStorage : IFileStorage
 
     public async Task<byte[]> DownloadFileAsBytes(string id)
     {
-        return await _gridFs.DownloadAsBytesAsync(id);
+        return await _gridFs.DownloadAsBytesAsync(ObjectId.Parse(id));
     }
 
     public async Task<BaseResult> DeleteFile(string id)

@@ -27,4 +27,9 @@ public class ProductService : IProductService
     {
         return await _productRepository.CreateProduct(product);
     }
+
+    public async Task<IEnumerable<Product>> GetProducts()
+    {
+        return await _productRepository.GetProducts();
+    }
 }

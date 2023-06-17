@@ -1,60 +1,73 @@
 ﻿@page "/admin_products"
+@using HardwareStore.Domain.Models
+@using HardwareStore.Client.ValidationErrorMessages
+@using HardwareStore.Domain.Services
 
 @inject NavigationManager NavigationManager;
+@inject IProductService ProductService;
 
 <MudGrid Spacing="5" Class="d-flex" Justify="Justify.SpaceAround">
-    <MudItem>
-        <MudPaper Class="pa-5 d-flex justify-start align-center">
-            <MudContainer Class="d-flex align-start justify-space-around">
-                <MudStack Class="d-flex flex-column pa-0" Spacing="2">
-                    <MudImage Width="200" Height="200" Src="https://cdn1.technopark.ru/technopark/photos_resized/product/1000_1000/614113/1_614113.jpg"></MudImage>
-                    <MudText Color="Color.Info" Align="Align.Start" Class="mt-3 d-flex">
+    @foreach (Product product in _products)
+    {
+        <MudItem>
+            <MudPaper Class="pa-5 d-flex justify-start align-center">
+                <MudContainer Class="d-flex align-start justify-space-around">
+                    @if (product.Images.Count == 0)
+                    {
+                        <MudImage Class="mr-5" Height="200" Width="200">
+                            <MudSkeleton SkeletonType="SkeletonType.Circle" Height="200px" Width="200"/>
+                        </MudImage>
+                    }
+                    @foreach (var image in product.Images.Take(1))
+                    {
+                        var base64ImageString = Convert.ToBase64String(image.Source);
+                        var convertedSource = $"data:image;base64,{base64ImageString}";
+                        <MudImage Width="200" Height="200" Src="@convertedSource" Class="mr-5"/>
+                    }
+                    <MudStack Class="d-flex flex-column pa-0" Spacing="2">
+                        <MudText Color="Color.Info" Align="Align.Start" Class="d-flex">
                             <b>Характеристики:</b>
                         </MudText>
-                    <MudStack Row="true" Spacing="1">
-                        <MudText Color="Color.Primary">
-                            <b>Ширина:</b>
-                        </MudText>
-                        <MudText>
-                            @strings
-                        </MudText>
+                        @foreach (Characteristic characteristic in product.Characteristics.Take(4))
+                        {
+                            <MudTextField Label="@characteristic.Name" T="string" @bind-Value="characteristic.Value" Required="true"
+                                          RequiredError="@RequiredErrorMessages.DefaultRequiredError"/>
+                        }
                     </MudStack>
-                    <MudStack Row="true" Spacing="1">
-                        <MudText Color="Color.Primary">
-                            <b>Высота:</b>
+                    <MudContainer Class="d-flex flex-column justify-space-between pl-5">
+                        <MudText Align="Align.Start" Color="Color.Info">
+                            <b>Название категории</b>
                         </MudText>
-                        <MudText>
-                            @strings
-                        </MudText>
-                    </MudStack>
-                </MudStack>
-                <MudContainer Class="d-flex flex-column justify-space-between pl-5">
-                    <MudText Align="Align.Start" Color="Color.Info">
-                        <b>Название категории</b>
-                    </MudText>
-                    <MudText Align="Align.Start" Class="mt-1 mb-2"><b>Наименование:</b> 123123</MudText>
-                    <MudText Align="Align.Start" Class="mb-2">Код: @strings</MudText>
-                    <MudStack Row="true" Spacing="1" Class="mb-5">
-                        <MudText Color="Color.Secondary">
-                            <b>Стоимость:</b>
-                        </MudText>
-                        <MudText>
-                            @strings
-                        </MudText>
-                    </MudStack>
-                    <MudStack Row="true">
-                        <MudButton Class="mt-7" Variant="Variant.Filled" Color="Color.Primary" OnClick="() =>OpenProductPage(1)">Изменить</MudButton>
-                        <MudButton Class="mt-7" Variant="Variant.Filled" Color="Color.Error">Удалить</MudButton>
-                    </MudStack>
+                        <MudText Align="Align.Start" Class="mt-1 mb-2"><b>Наименование:</b> @product.Name</MudText>
+                        <MudText Align="Align.Start" Class="mb-2">Код: @product.Code</MudText>
+                        <MudStack Row="true" Spacing="1" Class="mb-5">
+                            <MudText Color="Color.Secondary">
+                                <b>Стоимость:</b>
+                            </MudText>
+                            <MudText>
+                                @product.Cost
+                            </MudText>
+                        </MudStack>
+                        <MudStack Row="true">
+                            <MudButton Class="mt-7" Variant="Variant.Filled" Color="Color.Primary" OnClick="() => OpenProductPage(product.Id)">Изменить</MudButton>
+                            <MudButton Class="mt-7" Variant="Variant.Filled" Color="Color.Error">Удалить</MudButton>
+                        </MudStack>
+                    </MudContainer>
                 </MudContainer>
-            </MudContainer>
-        </MudPaper>
-    </MudItem>
+            </MudPaper>
+        </MudItem>
+    }
 </MudGrid>
 <MudFab Style="position: fixed; bottom: 0; right: 0; margin: 35px 25px;" Color="Color.Primary"
         Icon="@Icons.Material.Filled.Add" OnClick="() => OpenProductPage(0)"/>
 @code {
-    private string strings = "1";
+    private List<Product> _products = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _products = (await ProductService.GetProducts()).ToList();
+        await base.OnInitializedAsync();
+    }
 
     private void OpenProductPage(long id)
     {

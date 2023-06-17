@@ -112,4 +112,45 @@ public class ProductRepository : IProductRepository
 
         return new BaseResult {Success = true};
     }
+
+    public async Task<IEnumerable<Product>> GetProducts()
+    {
+        var products = new List<Product>();
+        var res = await _readonlyContext.Connection.QueryAsync<ProductDb>(
+            ProductRepositoryQueries.GetProducts);
+        
+        foreach (var product in res)
+        {
+            var convertedProduct = EntityConverter.ConvertProduct(product);
+            var characteristics = await _readonlyContext.Connection.QueryAsync<Characteristic>(
+                ProductRepositoryQueries.GetExistProductCharacteristics,
+                new {id = product.Id});
+
+            var category = await _readonlyContext.Connection.QuerySingleOrDefaultAsync<CategoryDb>(
+                ProductRepositoryQueries.GetProductCategory,
+                new {id = product.Id});
+
+            var imagesIds = await _readonlyContext.Connection
+                .QueryAsync<string>(ProductRepositoryQueries.GetProductImages, new {id = product.Id});
+
+            List<Image> images = new();
+            foreach (var imageId in imagesIds)
+            {
+                var newImage = new Image
+                {
+                    MongoId = imageId,
+                    Source = await _imageLoadingService.GetImageAsBytes(imageId),
+                };
+                images.Add(newImage);
+            }
+
+            convertedProduct.Characteristics = characteristics.ToList();
+            convertedProduct.Category = EntityConverter.ConvertCategory(category);
+            convertedProduct.Images = images;
+            
+            products.Add(convertedProduct);
+        }
+
+        return products;
+    }
 }
