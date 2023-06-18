@@ -1,5 +1,104 @@
 ﻿@page "/cabinet"
+@using Microsoft.AspNetCore.Components
+@using System.ComponentModel.DataAnnotations
+@using HardwareStore.Domain.Models
+@using HardwareStore.Client.Data
+@using HardwareStore.Client.ValidationErrorMessages
+@using HardwareStore.Domain.Services
+
+@inject IUserService UserService;
+@inject ISnackbar Snackbar;
+@inject NavigationManager NavigationManager;
+
+<PageTitle>Личный кабинет</PageTitle>
+@if (_isUserLoaded)
+{
+    <MudContainer Class="pa-5 d-flex justify-center">
+    <MudForm @bind-IsValid="@_success">
+                <MudCard Class="pa-5">
+                    <MudStack>
+                        <MudStack Row="true">
+                            <MudTextField Required="true" T="string" @bind-Value="_currentUser.Email"
+                                          RequiredError="@RequiredErrorMessages.DefaultRequiredError" Label="Почта" InputType="InputType.Email"
+                                          Validation="@(new EmailAddressAttribute {ErrorMessage = "Введенная почта не корректна"})"
+                                          Class="mb-3"/>
+                        </MudStack>
+                        <MudStack Row="true">
+                            <MudTextField Required="true" RequiredError="@RequiredErrorMessages.DefaultRequiredError" T="string"
+                                          @bind-Value="_currentUser.LastName" Label="Фамилия"
+                                          Class="mb-3"/>
+                            <MudTextField Required="true" T="string" RequiredError="@RequiredErrorMessages.DefaultRequiredError"
+                                          @bind-Value="_currentUser.FirstName" Label="Имя"
+                                          Class="mb-3"/>
+                            <MudTextField Required="true" RequiredError="@RequiredErrorMessages.DefaultRequiredError"
+                                          T="string" @bind-Value="_oldPassword" Label="Старый пароль"
+                                          Class="mb-3"/>
+                            <MudTextField Required="false" RequiredError="@RequiredErrorMessages.DefaultRequiredError"
+                                          T="string" @bind-Value="_newPassword" Label="Новый пароль"
+                                          Class="mb-3"/>
+                        </MudStack>
+                    </MudStack>
+                    <MudCardActions Class="pa-0">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                                   OnClick="async () => await SaveUserInfo()" Class="mr-5"
+                                   Disabled="@(!_success)">
+                            Сохранить изменения
+                        </MudButton>
+                        <MudButton Variant="Variant.Filled" Color="Color.Secondary"
+                                   OnClick="Quit">
+                            Выход
+                        </MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudForm>
+    </MudContainer>
+}
+
+else
+{
+    <h1>Недостаточно прав</h1>
+    return;
+}
 
 @code {
-    
+    private bool _success;
+    private bool _isUserLoaded;
+    private User? _currentUser;
+    private string _oldPassword = "";
+    private string _newPassword = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (AppState.AuthorizedUser is null)
+        {
+            return;
+        }
+        _currentUser = AppState.AuthorizedUser;
+        _isUserLoaded = true;
+        await base.OnInitializedAsync();
+    }
+
+    private async Task SaveUserInfo()
+    {
+        if (_currentUser is null || AppState.AuthorizedUser is null)
+            return;
+        var res = await UserService.ChangeUserData(_currentUser,_oldPassword, _newPassword);
+        if (res.Success)
+        {
+            AppState.AuthorizedUser = await UserService.GetUserAsync(AppState.AuthorizedUser.Id);
+            Snackbar.Add("Успешно", Severity.Success);
+            _oldPassword = "";
+            _newPassword = "";
+            StateHasChanged();
+            return;
+        }
+        Snackbar.Add(res.Message, Severity.Error);
+    }
+
+    private void Quit()
+    {
+        AppState.AuthorizedUser = null;
+        AppState.IsLogged = false;
+        NavigationManager.NavigateTo("/products");
+    }
 }
