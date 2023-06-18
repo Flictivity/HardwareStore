@@ -1,9 +1,12 @@
-﻿@page "/admin_products"
-@using HardwareStore.Domain.Models
+﻿@page "/products"
 @using HardwareStore.Domain.Services
+@using HardwareStore.Domain.Models
+@using HardwareStore.Domain.Services.Impl
+@using HardwareStore.Client.Data
 
-@inject NavigationManager NavigationManager;
 @inject IProductService ProductService;
+@inject NavigationManager NavigationManager;
+@inject IUserProductsService UserProductsService;
 @inject ISnackbar Snackbar;
 
 <MudGrid Spacing="1" Class="d-flex" Justify="Justify.SpaceAround">
@@ -40,7 +43,6 @@
                     <MudContainer Class="d-flex flex-column justify-space-between pl-5">
                         <MudText Align="Align.Start" Color="Color.Info">
                             <b>Название категории</b>
-                            @product.Category.Name
                         </MudText>
                         <MudText Align="Align.Start" Class="mt-1 mb-2"><b>Наименование:</b> @product.Name</MudText>
                         <MudText Align="Align.Start" Class="mb-2">Код: @product.Code</MudText>
@@ -52,16 +54,16 @@
                                 @product.Cost
                             </MudText>
                         </MudStack>
-                        <MudStack Row="true" Spacing="1" Class="mb-5">
-                            <MudText Color="Color.Success">
-                                <b>Количество:</b>
-                            </MudText>
-                            <MudText>
-                                @product.Count
-                            </MudText>
-                        </MudStack>
                         <MudStack Row="true">
-                            <MudButton Class="mt-7" Variant="Variant.Filled" Color="Color.Primary" OnClick="() => OpenProductPage(product.Id)">Изменить</MudButton>
+                            <MudTooltip Text="В корзину">
+                                <MudFab OnClick="async() => await AddToCart(product)" Color="Color.Success" Icon="@Icons.Material.Filled.ShoppingCart"/>
+                            </MudTooltip>
+                            <MudTooltip Text="В избранное">
+                                <MudFab OnClick="async () => await AddToFavorite(product)" Color="Color.Error" Icon="@Icons.Material.Filled.Favorite"/>
+                            </MudTooltip>
+                            <MudTooltip Text="Подробнее">
+                                <MudFab OnClick="() => OpenProductPage(product.Id)" Color="Color.Primary" Icon="@Icons.Material.Filled.MoreHoriz"/>
+                            </MudTooltip>
                         </MudStack>
                     </MudContainer>
                 </MudContainer>
@@ -69,8 +71,7 @@
         </MudItem>
     }
 </MudGrid>
-<MudFab Style="position: fixed; bottom: 0; right: 0; margin: 35px 25px;" Color="Color.Primary"
-        Icon="@Icons.Material.Filled.Add" OnClick="() => OpenProductPage(0)"/>
+
 @code {
     private List<Product> _products = new();
 
@@ -82,6 +83,42 @@
 
     private void OpenProductPage(long id)
     {
-        NavigationManager.NavigateTo($"/admin_product/{id}");
+        NavigationManager.NavigateTo($"/product/{id}");
+    }
+    
+    private async Task AddToCart(Product? product)
+    {
+        if (AppState.AuthorizedUser is null)
+        {
+            Snackbar.Add("Для добавления товара в корзину, необходимо авторизироваться", Severity.Error);
+            return;
+        }
+        if (product is null)
+            return;
+        var res = await UserProductsService.AddToCartAsync(product.Id,AppState.AuthorizedUser.Id);
+        if (res.Success)
+        {
+            Snackbar.Add($"Товар {product.Name} успешно добавлен в корзину", Severity.Success);
+            return;
+        }
+        Snackbar.Add(res.Message, Severity.Info);
+    }
+
+    private async Task AddToFavorite(Product? product)
+    {
+        if (AppState.AuthorizedUser is null)
+        {
+            Snackbar.Add("Для добавления товара в избранное, необходимо авторизироваться", Severity.Error);
+            return;
+        }
+        if (product is null)
+            return;
+        var res = await UserProductsService.AddToFavoriteAsync(product.Id,AppState.AuthorizedUser.Id);
+        if (res.Success)
+        {
+            Snackbar.Add($"Товар {product.Name} успешно добавлен в избранное", Severity.Success);
+            return;
+        }
+        Snackbar.Add(res.Message, Severity.Info);
     }
 }

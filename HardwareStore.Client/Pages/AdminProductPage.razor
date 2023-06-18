@@ -77,7 +77,7 @@
     </MudTabPanel>
 </MudTabs>
 <MudStack Row="true" Class="d-flex mx-auto justify-content-center">
-    <MudButton Variant="Variant.Filled" Color="Color.Error">Удалить</MudButton>
+    <MudButton Variant="Variant.Filled" Color="Color.Dark" OnClick="GoBack">Назад</MudButton>
     <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="async ()=> await SaveProduct()">Cохранить</MudButton>
 </MudStack>
 
@@ -166,5 +166,10 @@
     {
         _category = selectedCategory;
         _product!.Characteristics = (await ProductService.GetCharacteristics(_category.Id)).ToList();
+    }
+
+    private void GoBack()
+    {
+        NavigationManager.NavigateTo("/admin_products");
     }
 }

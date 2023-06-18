@@ -1,0 +1,133 @@
+﻿@page "/product/{ProductId:long}"
+
+@inject NavigationManager NavigationManager;
+@inject IProductService ProductService;
+@inject IUserProductsService UserProductsService;
+@inject ISnackbar Snackbar;
+
+@using HardwareStore.Domain.Models
+@using HardwareStore.Domain.Services
+@using HardwareStore.Client.Data
+
+@if (_product is null)
+{
+    <h1>Нам не удалось найти то, что вы искали...</h1>
+    return;
+}
+<MudTabs Rounded="true" Border="false" PanelClass="pa-6" ApplyEffectsToContainer="true">
+    <MudTabPanel Text="Основная информация">
+        <MudStack>
+            <MudText Align="Align.Start" Color="Color.Info">
+                <b>Название категории</b>
+                @_product.Category.Name
+            </MudText>
+            <MudTextField ReadOnly="true" Class="mt-1 mb-2" Label="Наименование" T="string" @bind-Value="_product.Name"></MudTextField>
+            <MudTextField ReadOnly="true" Label="Код" T="long" @bind-Value="_product.Code"></MudTextField>
+            <MudTextField ReadOnly="true" Class="mb-2" Label="Стоимость" T="long" @bind-Value="_product.Cost"></MudTextField>
+            <MudNumericField ReadOnly="true" Min="1" Class="mb-5" Label="Количество" @bind-Value="_product.Count"></MudNumericField>
+            <MudTextField ReadOnly="true" Variant="Variant.Text" Lines="2" Label="Описание" T="string" @bind-Value="_product.Description"/>
+        </MudStack>
+    </MudTabPanel>
+    <MudTabPanel Text="Характеристики">
+        <MudStack Class="d-flex flex-column pa-0" Spacing="2">
+            <MudText Color="Color.Info" Align="Align.Start" Class="mt-3 d-flex">
+                <b>Характеристики:</b>
+            </MudText>
+            @foreach (Characteristic characteristic in _product.Characteristics.Take(4))
+            {
+                <MudText>
+                    <b>@characteristic.Name: </b>@characteristic.Value
+                </MudText>
+            }
+        </MudStack>
+    </MudTabPanel>
+    <MudTabPanel Text="Изображения">
+        <MudGrid Class="d-flex align-center" Justify="Justify.Center">
+            @foreach (Image image in _product.Images)
+            {
+                var base64ImageString = Convert.ToBase64String(image.Source);
+
+                var convertedSource = $"data:image;base64,{base64ImageString}";
+                <MudItem>
+                    <MudImage Width="200" Height="200" Src="@convertedSource"/>
+                </MudItem>
+            }
+        </MudGrid>
+    </MudTabPanel>
+</MudTabs>
+<MudStack Row="true" Class="d-flex mx-auto justify-content-center">
+    <MudTooltip Text="Назад">
+        <MudFab OnClick="GoBack" Color="Color.Dark" Icon="@Icons.Material.Filled.ArrowLeft"/>
+    </MudTooltip>
+    <MudTooltip Text="В корзину">
+        <MudFab OnClick="async () => await AddToCart()" Color="Color.Success" Icon="@Icons.Material.Filled.ShoppingCart"/>
+    </MudTooltip>
+    <MudTooltip Text="В избранное">
+        <MudFab OnClick="async () => await AddToFavorite()" Color="Color.Error" Icon="@Icons.Material.Filled.Favorite"/>
+    </MudTooltip>
+</MudStack>
+
+@code {
+
+    [Parameter]
+    public long ProductId { get; set; }
+
+    private Product? _product = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (ProductId != 0)
+        {
+            _product = await ProductService.GetProduct(ProductId);
+            if (_product is null)
+                return;
+        }
+        else
+        {
+            _product!.Characteristics = (await ProductService.GetCharacteristics(_product.Category.Id)).ToList();
+        }
+        
+        await base.OnInitializedAsync();
+    }
+
+    private void GoBack()
+    {
+        NavigationManager.NavigateTo("/products");
+    }
+
+    private async Task AddToCart()
+    {
+        if (AppState.AuthorizedUser is null)
+        {
+            Snackbar.Add("Для добавления товара в корзину, необходимо авторизироваться", Severity.Error);
+            return;
+        }
+        if (_product is null)
+            return;
+        var res = await UserProductsService.AddToCartAsync(ProductId,AppState.AuthorizedUser!.Id);
+        if (res.Success)
+        {
+            Snackbar.Add($"Товар {_product.Name} успешно добавлен в корзину", Severity.Success);
+            return;
+        }
+        Snackbar.Add(res.Message, Severity.Info);
+    }
+    
+    private async Task AddToFavorite()
+    {
+        if (AppState.AuthorizedUser is null)
+        {
+            Snackbar.Add("Для добавления товара в избранное, необходимо авторизироваться", Severity.Error);
+            return;
+        }
+        if (_product is null)
+            return;
+        var res = await UserProductsService.AddToFavoriteAsync(_product.Id,AppState.AuthorizedUser.Id);
+        if (res.Success)
+        {
+            Snackbar.Add($"Товар {_product.Name} успешно добавлен в избранное", Severity.Success);
+            return;
+        }
+        Snackbar.Add(res.Message, Severity.Info);
+    }
+}

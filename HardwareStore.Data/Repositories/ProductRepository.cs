@@ -164,8 +164,8 @@ public class ProductRepository : IProductRepository
         var dbProduct = await _context.Products.FirstOrDefaultAsync(x => x.Id == product.Id);
         if (dbProduct is null)
         {
-            _logger.LogError("Не удалось найти category_title_value для product_{Id}",product.Id);
-            return new BaseResult{Success = false, Message = "Нам не удалось найти, то что вы искали"};
+            _logger.LogError("Не удалось найти category_title_value для product_{Id}", product.Id);
+            return new BaseResult {Success = false, Message = "Нам не удалось найти, то что вы искали"};
         }
 
         dbProduct.Name = product.Name;
@@ -173,18 +173,19 @@ public class ProductRepository : IProductRepository
         dbProduct.Count = product.Count;
         dbProduct.Code = product.Code;
         dbProduct.Description = product.Description;
-        
+
         _context.Products.Update(dbProduct);
         await _context.SaveChangesAsync();
         _context.ChangeTracker.Clear();
-        
+
         foreach (var characteristic in product.Characteristics)
         {
-            var dbCharacteristic = await _context.CategoryTitleValues.FirstOrDefaultAsync(x => x.Id == characteristic.Id);
+            var dbCharacteristic =
+                await _context.CategoryTitleValues.FirstOrDefaultAsync(x => x.Id == characteristic.Id);
             if (dbCharacteristic is null)
             {
-                _logger.LogError("Не удалось найти category_title_value для product_{Id}",product.Id);
-                return new BaseResult{Success = false, Message = "Нам не удалось найти, то что вы искали"};
+                _logger.LogError("Не удалось найти category_title_value для product_{Id}", product.Id);
+                return new BaseResult {Success = false, Message = "Нам не удалось найти, то что вы искали"};
             }
 
             dbCharacteristic.Value = characteristic.Value;
@@ -194,8 +195,8 @@ public class ProductRepository : IProductRepository
         await _context.SaveChangesAsync();
         _context.ChangeTracker.Clear();
 
-        var oldProductImages = _context.ProductImages.Where(x=> x.ProductId == product.Id).ToList();
-        
+        var oldProductImages = _context.ProductImages.Where(x => x.ProductId == product.Id).ToList();
+
         foreach (var image in oldProductImages)
         {
             if (product.Images.All(x => x.MongoId != image.ImageSource))

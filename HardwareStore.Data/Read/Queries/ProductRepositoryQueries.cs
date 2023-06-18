@@ -17,5 +17,5 @@ public class ProductRepositoryQueries
         @"SELECT p.image_source FROM public.product_image p WHERE p.product_id = @id";
 
     public const string GetProductCharacteristics = @"SELECT ct.name, '', 0, ct.id AS CategoryTitleId FROM public.category_title ct WHERE ct.category_id = @id";
-    public const string GetProducts = @"SELECT * FROM public.product";
+public const string GetProducts = @"SELECT * FROM public.product WHERE count > 0";
 }

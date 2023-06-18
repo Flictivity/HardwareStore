@@ -1,14 +1,27 @@
-﻿@page "/admin_products"
+﻿@page "/cart/{UserId:long}"
 @using HardwareStore.Domain.Models
 @using HardwareStore.Domain.Services
+@using HardwareStore.Client.Data
 
-@inject NavigationManager NavigationManager;
-@inject IProductService ProductService;
+@inject IUserProductsService UserProductsService;
 @inject ISnackbar Snackbar;
+@inject NavigationManager NavigationManager;
+
+@if (AppState.AuthorizedUser is null)
+{
+    <h1>Недостаточно прав</h1>
+}
 
 <MudGrid Spacing="1" Class="d-flex" Justify="Justify.SpaceAround">
-    @foreach (Product product in _products)
+    @foreach (Product? product in _products)
     {
+        if (product is null)
+        {
+            <MudItem>
+                <MudText>Удаленный товар</MudText>
+            </MudItem>
+            continue;
+        }
         <MudItem xs="12" md="9" lg="12">
             <MudPaper Class="pa-5 d-flex justify-start align-center">
                 <MudContainer Class="d-flex align-center justify-space-around">
@@ -40,7 +53,6 @@
                     <MudContainer Class="d-flex flex-column justify-space-between pl-5">
                         <MudText Align="Align.Start" Color="Color.Info">
                             <b>Название категории</b>
-                            @product.Category.Name
                         </MudText>
                         <MudText Align="Align.Start" Class="mt-1 mb-2"><b>Наименование:</b> @product.Name</MudText>
                         <MudText Align="Align.Start" Class="mb-2">Код: @product.Code</MudText>
@@ -52,16 +64,16 @@
                                 @product.Cost
                             </MudText>
                         </MudStack>
-                        <MudStack Row="true" Spacing="1" Class="mb-5">
-                            <MudText Color="Color.Success">
-                                <b>Количество:</b>
-                            </MudText>
-                            <MudText>
-                                @product.Count
-                            </MudText>
-                        </MudStack>
                         <MudStack Row="true">
-                            <MudButton Class="mt-7" Variant="Variant.Filled" Color="Color.Primary" OnClick="() => OpenProductPage(product.Id)">Изменить</MudButton>
+                            <MudTooltip Text="Удалить">
+                                <MudFab OnClick="async () => await DeleteFromCart(product.Id)" Color="Color.Success" Icon="@Icons.Material.Filled.Delete"/>
+                            </MudTooltip>
+                            <MudTooltip Text="В избранное">
+                                <MudFab OnClick="async () => await AddToFavorite(product)" Color="Color.Error" Icon="@Icons.Material.Filled.Favorite"/>
+                            </MudTooltip>
+                            <MudTooltip Text="Подробнее">
+                                <MudFab OnClick="() => OpenProductPage(product.Id)" Color="Color.Primary" Icon="@Icons.Material.Filled.MoreHoriz"/>
+                            </MudTooltip>
                         </MudStack>
                     </MudContainer>
                 </MudContainer>
@@ -69,19 +81,58 @@
         </MudItem>
     }
 </MudGrid>
-<MudFab Style="position: fixed; bottom: 0; right: 0; margin: 35px 25px;" Color="Color.Primary"
-        Icon="@Icons.Material.Filled.Add" OnClick="() => OpenProductPage(0)"/>
+
+
 @code {
-    private List<Product> _products = new();
+    [Parameter]
+    public long UserId { get; set; }
+
+    private List<Product?> _products = new();
 
     protected override async Task OnInitializedAsync()
     {
-        _products = (await ProductService.GetProducts()).ToList();
+        if (AppState.AuthorizedUser is null)
+            return;
+        
+        _products = (await UserProductsService.GetUserCartProducts(AppState.AuthorizedUser.Id)).ToList();
         await base.OnInitializedAsync();
     }
-
+    
     private void OpenProductPage(long id)
     {
-        NavigationManager.NavigateTo($"/admin_product/{id}");
+        NavigationManager.NavigateTo($"/product/{id}");
+    }
+
+    private async Task DeleteFromCart(long id)
+    {
+        if(AppState.AuthorizedUser is null)
+            return;
+        var res = await UserProductsService.DeleteFromCart(id, AppState.AuthorizedUser.Id);
+        if (res.Success)
+        {
+            Snackbar.Add("Успешно", Severity.Success);
+            _products = (await UserProductsService.GetUserCartProducts(AppState.AuthorizedUser.Id)).ToList();
+            StateHasChanged();
+            return;
+        }
+        Snackbar.Add("Произошла ошибка", Severity.Error);
+    }
+    
+    private async Task AddToFavorite(Product? product)
+    {
+        if (AppState.AuthorizedUser is null)
+        {
+            Snackbar.Add("Для добавления товара в избранное, необходимо авторизироваться", Severity.Error);
+            return;
+        }
+        if (product is null)
+            return;
+        var res = await UserProductsService.AddToFavoriteAsync(product.Id,AppState.AuthorizedUser.Id);
+        if (res.Success)
+        {
+            Snackbar.Add($"Товар {product.Name} успешно добавлен в избранное", Severity.Success);
+            return;
+        }
+        Snackbar.Add(res.Message, Severity.Info);
     }
 }

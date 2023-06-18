@@ -51,7 +51,8 @@
         var res = await AuthorizationService.AuthorizeAsync(_model.Email, _model.Password);
         if (res.Success)
         {
-            AppState.AuthorizedUser = res.User; 
+            AppState.AuthorizedUser = res.User;
+            AppState.IsLogged = true;
             Snackbar.Add("Успешно", Severity.Success);
             NavigationManager.NavigateTo("/cabinet");
         }

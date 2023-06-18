@@ -16,7 +16,7 @@ public class Product
 
     public List<Characteristic> Characteristics { get; set; } = new();
     
-    public Category Category { get; set; } = null!;
+    public Category Category { get; set; } = new();
 
     public List<Image> Images { get; set; } = new();
 }
