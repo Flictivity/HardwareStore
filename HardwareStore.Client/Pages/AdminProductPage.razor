@@ -4,10 +4,12 @@
 @inject ICategoryService CategoryService;
 @inject IImageLoadingService ImageLoadingService; 
 @inject ISnackbar Snackbar;
+@inject NavigationManager NavigationManager;
 
 @using HardwareStore.Domain.Models
 @using HardwareStore.Domain.Services
 @using HardwareStore.Client.ValidationErrorMessages
+@using HardwareStore.Domain.Results
 
 @if (_product is null)
 {
@@ -140,15 +142,24 @@
     {
         if(_product is null)
             return;
-        ;
+
+        BaseResult res;
         if (!_isEditing)
         {
-            var res = await ProductService.CreateProduct(_product);
-            if (res.Success)
-            {
-                Snackbar.Add("Успешно",Severity.Success);
-            }
+            res = await ProductService.CreateProduct(_product);
         }
+        else
+        {
+            res = await ProductService.UpdateProduct(_product);
+        }
+        
+        if (res.Success)
+        {
+            Snackbar.Add("Успешно",Severity.Success);
+            NavigationManager.NavigateTo("/admin_products");
+            return;
+        }
+        Snackbar.Add(res.Message, Severity.Error);
     }
 
     private async Task UpdateCharacteristics(Category selectedCategory)

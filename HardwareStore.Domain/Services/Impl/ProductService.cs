@@ -32,4 +32,9 @@ public class ProductService : IProductService
     {
         return await _productRepository.GetProducts();
     }
+
+    public async Task<BaseResult> UpdateProduct(Product product)
+    {
+        return await _productRepository.UpdateProduct(product);
+    }
 }

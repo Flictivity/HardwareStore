@@ -6,34 +6,37 @@
 @inject NavigationManager NavigationManager;
 @inject IProductService ProductService;
 
-<MudGrid Spacing="5" Class="d-flex" Justify="Justify.SpaceAround">
+<MudGrid Spacing="1" Class="d-flex" Justify="Justify.SpaceAround">
     @foreach (Product product in _products)
     {
-        <MudItem>
+        <MudItem xs="12" md="9" lg="6">
             <MudPaper Class="pa-5 d-flex justify-start align-center">
-                <MudContainer Class="d-flex align-start justify-space-around">
+                <MudContainer Class="d-flex align-center justify-space-around">
                     @if (product.Images.Count == 0)
                     {
                         <MudImage Class="mr-5" Height="200" Width="200">
-                            <MudSkeleton SkeletonType="SkeletonType.Circle" Height="200px" Width="200"/>
+                            <MudSkeleton Animation="Animation.Pulse" SkeletonType="SkeletonType.Circle" Height="200px" Width="200"/>
                         </MudImage>
                     }
                     @foreach (var image in product.Images.Take(1))
                     {
                         var base64ImageString = Convert.ToBase64String(image.Source);
                         var convertedSource = $"data:image;base64,{base64ImageString}";
-                        <MudImage Width="200" Height="200" Src="@convertedSource" Class="mr-5"/>
+                        <MudImage Style="width: 35%; height: 35%; min-height: 100px; min-width: 100px" Src="@convertedSource" Class="mr-5"/>
                     }
-                    <MudStack Class="d-flex flex-column pa-0" Spacing="2">
-                        <MudText Color="Color.Info" Align="Align.Start" Class="d-flex">
-                            <b>Характеристики:</b>
-                        </MudText>
-                        @foreach (Characteristic characteristic in product.Characteristics.Take(4))
-                        {
-                            <MudTextField Label="@characteristic.Name" T="string" @bind-Value="characteristic.Value" Required="true"
-                                          RequiredError="@RequiredErrorMessages.DefaultRequiredError"/>
-                        }
-                    </MudStack>
+                    <MudHidden Breakpoint="Breakpoint.Xs">
+                        <MudStack Class="d-flex flex-column pa-0" Spacing="2">
+                            <MudText Color="Color.Info" Align="Align.Start" Class="d-flex">
+                                <b>Характеристики:</b>
+                            </MudText>
+                            @foreach (Characteristic characteristic in product.Characteristics.Take(4))
+                            {
+                                <MudText>
+                                    <b>@characteristic.Name: </b>@characteristic.Value
+                                </MudText>
+                            }
+                        </MudStack>
+                    </MudHidden>
                     <MudContainer Class="d-flex flex-column justify-space-between pl-5">
                         <MudText Align="Align.Start" Color="Color.Info">
                             <b>Название категории</b>

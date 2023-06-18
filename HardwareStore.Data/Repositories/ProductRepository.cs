@@ -7,6 +7,8 @@ using HardwareStore.Domain.Models;
 using HardwareStore.Domain.Repositories;
 using HardwareStore.Domain.Results;
 using HardwareStore.Domain.Services;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace HardwareStore.Data.Repositories;
 
@@ -14,13 +16,16 @@ public class ProductRepository : IProductRepository
 {
     private readonly HardwareStoreContext _context;
     private readonly HardwareStoreReadonlyContext _readonlyContext;
-    private readonly IImageLoadingService _imageLoadingService; 
+    private readonly IImageLoadingService _imageLoadingService;
+    private readonly ILogger<ProductRepository> _logger;
 
-    public ProductRepository(HardwareStoreContext context, HardwareStoreReadonlyContext readonlyContext, IImageLoadingService imageLoadingService)
+    public ProductRepository(HardwareStoreContext context, HardwareStoreReadonlyContext readonlyContext,
+        IImageLoadingService imageLoadingService, ILogger<ProductRepository> logger)
     {
         _context = context;
         _readonlyContext = readonlyContext;
         _imageLoadingService = imageLoadingService;
+        _logger = logger;
     }
 
     public async Task<Product?> GetProduct(long id)
@@ -40,7 +45,7 @@ public class ProductRepository : IProductRepository
             new {id});
 
         var imagesIds = await _readonlyContext.Connection
-            .QueryAsync<string>(ProductRepositoryQueries.GetProductImages, new { id});
+            .QueryAsync<string>(ProductRepositoryQueries.GetProductImages, new {id});
 
         List<Image> images = new();
         foreach (var imageId in imagesIds)
@@ -93,10 +98,10 @@ public class ProductRepository : IProductRepository
             };
             _context.CategoryTitleValues.Add(newCharacteristic);
         }
-        
+
         await _context.SaveChangesAsync();
         _context.ChangeTracker.Clear();
-        
+
         foreach (var image in product.Images)
         {
             var newProductImage = new ProductImageDb
@@ -106,7 +111,7 @@ public class ProductRepository : IProductRepository
             };
             _context.ProductImages.Add(newProductImage);
         }
-        
+
         await _context.SaveChangesAsync();
         _context.ChangeTracker.Clear();
 
@@ -118,7 +123,7 @@ public class ProductRepository : IProductRepository
         var products = new List<Product>();
         var res = await _readonlyContext.Connection.QueryAsync<ProductDb>(
             ProductRepositoryQueries.GetProducts);
-        
+
         foreach (var product in res)
         {
             var convertedProduct = EntityConverter.ConvertProduct(product);
@@ -147,10 +152,76 @@ public class ProductRepository : IProductRepository
             convertedProduct.Characteristics = characteristics.ToList();
             convertedProduct.Category = EntityConverter.ConvertCategory(category);
             convertedProduct.Images = images;
-            
+
             products.Add(convertedProduct);
         }
 
         return products;
+    }
+
+    public async Task<BaseResult> UpdateProduct(Product product)
+    {
+        var dbProduct = await _context.Products.FirstOrDefaultAsync(x => x.Id == product.Id);
+        if (dbProduct is null)
+        {
+            _logger.LogError("Не удалось найти category_title_value для product_{Id}",product.Id);
+            return new BaseResult{Success = false, Message = "Нам не удалось найти, то что вы искали"};
+        }
+
+        dbProduct.Name = product.Name;
+        dbProduct.Cost = product.Cost;
+        dbProduct.Count = product.Count;
+        dbProduct.Code = product.Code;
+        dbProduct.Description = product.Description;
+        
+        _context.Products.Update(dbProduct);
+        await _context.SaveChangesAsync();
+        _context.ChangeTracker.Clear();
+        
+        foreach (var characteristic in product.Characteristics)
+        {
+            var dbCharacteristic = await _context.CategoryTitleValues.FirstOrDefaultAsync(x => x.Id == characteristic.Id);
+            if (dbCharacteristic is null)
+            {
+                _logger.LogError("Не удалось найти category_title_value для product_{Id}",product.Id);
+                return new BaseResult{Success = false, Message = "Нам не удалось найти, то что вы искали"};
+            }
+
+            dbCharacteristic.Value = characteristic.Value;
+            _context.CategoryTitleValues.Update(dbCharacteristic);
+        }
+
+        await _context.SaveChangesAsync();
+        _context.ChangeTracker.Clear();
+
+        var oldProductImages = _context.ProductImages.Where(x=> x.ProductId == product.Id).ToList();
+        
+        foreach (var image in oldProductImages)
+        {
+            if (product.Images.All(x => x.MongoId != image.ImageSource))
+                _context.ProductImages.Remove(image);
+        }
+
+        foreach (var image in product.Images)
+        {
+            var oldImage = oldProductImages.FirstOrDefault(x => x.ImageSource == image.MongoId);
+            if (oldImage is not null)
+            {
+                oldImage.ImageSource = image.MongoId;
+            }
+            else
+            {
+                _context.ProductImages.Add(new ProductImageDb
+                {
+                    ProductId = product.Id,
+                    ImageSource = image.MongoId,
+                });
+            }
+        }
+
+        await _context.SaveChangesAsync();
+        _context.ChangeTracker.Clear();
+
+        return new BaseResult {Success = true};
     }
 }
