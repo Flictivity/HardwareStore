@@ -7,91 +7,121 @@
 @inject NavigationManager NavigationManager;
 @inject IUserProductsService UserProductsService;
 @inject ISnackbar Snackbar;
+@inject ICategoryService CategoryService;
 
 @if (!_isLoaded)
 {
     <MudProgressLinear Color="Color.Primary"/>
 }
-@if (_isLoaded && _products.Count == 0)
+@if (_isLoaded && _sortedProducts.Count == 0)
 {
     <h1>Товары не найдены</h1>
 }
-<MudGrid Spacing="1" Class="d-flex" Justify="Justify.SpaceAround">
-    @foreach (Product product in _products)
-    {
-        <MudItem xs="12" md="9" lg="12">
-            <MudPaper Class="pa-5 d-flex justify-start align-center">
-                <MudContainer Class="d-flex align-center justify-space-around">
-                    @if (product.Images.Count == 0)
-                    {
-                        <MudImage Class="mr-5" Height="200" Width="200">
-                            <MudSkeleton Animation="Animation.Pulse" SkeletonType="SkeletonType.Circle" Height="200px" Width="200"/>
-                        </MudImage>
-                    }
-                    @foreach (var image in product.Images.Take(1))
-                    {
-                        var base64ImageString = Convert.ToBase64String(image.Source);
-                        var convertedSource = $"data:image;base64,{base64ImageString}";
-                        <MudImage Style="width: 35%; height: 35%; min-height: 100px; min-width: 100px" Src="@convertedSource" Class="mr-5"/>
-                    }
-                    <MudHidden Breakpoint="Breakpoint.Xs">
-                        <MudStack Class="d-flex flex-column pa-0" Spacing="2">
-                            <MudText Color="Color.Info" Align="Align.Start" Class="d-flex">
-                                <b>Характеристики:</b>
-                            </MudText>
-                            @foreach (Characteristic characteristic in product.Characteristics.Take(4))
-                            {
-                                <MudText>
-                                    <b>@characteristic.Name: </b>@characteristic.Value
+<MudStack Row="true">
+    <MudStack>
+        <MudText>Цена</MudText>
+        <MudStack Row="true">
+            <MudStack Row="true">
+                <MudTextField T="long" Label="От" Value="_costMin" ValueChanged="MinValueChanged"></MudTextField>
+                <MudButton OnClick="() => MinValueChanged(_savedCostMin)" Variant="Variant.Filled" Color="Color.Info">min</MudButton>
+            </MudStack>
+            <MudStack Row="true">
+                <MudTextField T="long" Label="До" Value="_costMax" ValueChanged="MaxValueChanged"></MudTextField>
+                <MudButton OnClick="() => MaxValueChanged(_savedCostMax)" Variant="Variant.Filled" Color="Color.Info">max</MudButton>
+            </MudStack>
+        </MudStack>
+        <MudTextField T="string" Value="_searchString" ValueChanged="Search" Label="Поиск"></MudTextField>
+    </MudStack>
+    <MudGrid Spacing="1" Class="d-flex" Justify="Justify.SpaceAround">
+        @foreach (Product product in _sortedProducts)
+        {
+            <MudItem xs="12" md="9" lg="12">
+                <MudPaper Class="pa-5 d-flex justify-start align-center">
+                    <MudContainer Class="d-flex align-center justify-space-around">
+                        @if (product.Images.Count == 0)
+                        {
+                            <MudImage Class="mr-5" Height="200" Width="200">
+                                <MudSkeleton Animation="Animation.Pulse" SkeletonType="SkeletonType.Circle" Height="200px" Width="200"/>
+                            </MudImage>
+                        }
+                        @foreach (var image in product.Images.Take(1))
+                        {
+                            var base64ImageString = Convert.ToBase64String(image.Source);
+                            var convertedSource = $"data:image;base64,{base64ImageString}";
+                            <MudImage Style="width: 35%; height: 35%; min-height: 100px; min-width: 100px" Src="@convertedSource" Class="mr-5"/>
+                        }
+                        <MudHidden Breakpoint="Breakpoint.Xs">
+                            <MudStack Class="d-flex flex-column pa-0" Spacing="2">
+                                <MudText Color="Color.Info" Align="Align.Start" Class="d-flex">
+                                    <b>Характеристики:</b>
                                 </MudText>
-                            }
-                        </MudStack>
-                    </MudHidden>
-                    <MudContainer Class="d-flex flex-column justify-space-between pl-5">
-                        <MudText Align="Align.Start" Color="Color.Info">
-                            <b>Название категории</b>
-                            @product.Category.Name
-                        </MudText>
-                        <MudText Align="Align.Start" Class="mt-1 mb-2"><b>Наименование:</b> @product.Name</MudText>
-                        <MudText Align="Align.Start" Class="mb-2">Код: @product.Code</MudText>
-                        <MudStack Row="true" Spacing="1" Class="mb-5">
-                            <MudText Color="Color.Secondary">
-                                <b>Стоимость:</b>
+                                @foreach (Characteristic characteristic in product.Characteristics.Take(4))
+                                {
+                                    <MudText>
+                                        <b>@characteristic.Name: </b>@characteristic.Value
+                                    </MudText>
+                                }
+                            </MudStack>
+                        </MudHidden>
+                        <MudContainer Class="d-flex flex-column justify-space-between pl-5">
+                            <MudText Align="Align.Start" Color="Color.Info">
+                                <b>Название категории</b>
+                                @product.Category.Name
                             </MudText>
-                            <MudText>
-                                @product.Cost
-                            </MudText>
-                        </MudStack>
-                        <MudStack Row="true">
-                            <MudTooltip Text="В корзину">
-                                <MudFab OnClick="async() => await AddToCart(product)" Color="Color.Success" Icon="@Icons.Material.Filled.ShoppingCart"/>
-                            </MudTooltip>
-                            <MudTooltip Text="В избранное">
-                                <MudFab OnClick="async () => await AddToFavorite(product)" Color="Color.Error" Icon="@Icons.Material.Filled.Favorite"/>
-                            </MudTooltip>
-                            <MudTooltip Text="Подробнее">
-                                <MudFab OnClick="() => OpenProductPage(product.Id)" Color="Color.Primary" Icon="@Icons.Material.Filled.MoreHoriz"/>
-                            </MudTooltip>
-                        </MudStack>
+                            <MudText Align="Align.Start" Class="mt-1 mb-2"><b>Наименование:</b> @product.Name</MudText>
+                            <MudText Align="Align.Start" Class="mb-2">Код: @product.Code</MudText>
+                            <MudStack Row="true" Spacing="1" Class="mb-5">
+                                <MudText Color="Color.Secondary">
+                                    <b>Стоимость:</b>
+                                </MudText>
+                                <MudText>
+                                    @product.Cost
+                                </MudText>
+                            </MudStack>
+                            <MudStack Row="true">
+                                <MudTooltip Text="В корзину">
+                                    <MudFab OnClick="async () => await AddToCart(product)" Color="Color.Success" Icon="@Icons.Material.Filled.ShoppingCart"/>
+                                </MudTooltip>
+                                <MudTooltip Text="В избранное">
+                                    <MudFab OnClick="async () => await AddToFavorite(product)" Color="Color.Error" Icon="@Icons.Material.Filled.Favorite"/>
+                                </MudTooltip>
+                                <MudTooltip Text="Подробнее">
+                                    <MudFab OnClick="() => OpenProductPage(product.Id)" Color="Color.Primary" Icon="@Icons.Material.Filled.MoreHoriz"/>
+                                </MudTooltip>
+                            </MudStack>
+                        </MudContainer>
                     </MudContainer>
-                </MudContainer>
-            </MudPaper>
-        </MudItem>
-    }
-</MudGrid>
+                </MudPaper>
+            </MudItem>
+        }
+    </MudGrid>
+</MudStack>
 
 @code {
 
     [Parameter]
     public long CategoryId { get; set; } = 1;
     private List<Product> _products = new();
+    private List<Product> _sortedProducts = new();
 
     private bool _isLoaded;
+
+    private long _costMin;
+    private long _costMax;
+    private long _savedCostMin;
+    private long _savedCostMax;
+    private string _searchString = "";
 
     protected override async Task OnInitializedAsync()
     {
         _products = (await ProductService.GetProducts(CategoryId)).ToList();
         _isLoaded = true;
+
+        _sortedProducts = _products;
+        _costMax = _products.Max(x => x.Cost);
+        _costMin = _products.Min(x => x.Cost);
+        _savedCostMax = _costMax;
+        _savedCostMin = _costMin;
         await base.OnInitializedAsync();
     }
 
@@ -134,5 +164,43 @@
             return;
         }
         Snackbar.Add(res.Message, Severity.Info);
+    }
+
+    private void MinValueChanged(long newValue)
+    {
+        if (newValue > _costMax)
+        {
+            Snackbar.Add("Минимальное значение не может превышать максимальное", Severity.Info);
+            return ;
+        }
+                
+        _costMin = newValue;
+        SearchAndSort();
+        StateHasChanged();
+    }
+
+    private void MaxValueChanged(long newValue)
+    {
+        if (newValue < _costMin)
+        {
+            Snackbar.Add("Maксимально значение не может быть меньше минимального", Severity.Info);
+            return ;
+        }
+                
+        _costMax = newValue;
+        SearchAndSort();
+        StateHasChanged();
+    }
+
+    private void Search(string searchText)
+    {
+        _searchString = searchText;
+        SearchAndSort();
+    }
+
+    private void SearchAndSort()
+    {
+        _sortedProducts = _products.Where(x => x.Cost >= _costMin && x.Cost <= _costMax
+            && string.Join(" ", x.Name, x.Description, x.Code).ToLower().Contains(_searchString.ToLower())).ToList();
     }
 }

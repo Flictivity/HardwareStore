@@ -11,6 +11,11 @@
 @inject NavigationManager NavigationManager;
 
 <PageTitle>Личный кабинет</PageTitle>
+@if (_currentUser is null)
+{
+    return;
+}
+
 @if (_isUserLoaded)
 {
     <MudContainer Class="pa-5 d-flex justify-center">
