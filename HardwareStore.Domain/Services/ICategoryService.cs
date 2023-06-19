@@ -18,4 +18,6 @@ public interface ICategoryService
     Task<BaseResult> CreateCategoryAsync(string name, MainCategory mainCategory, List<CategoryTitle> titles);
 
     Task<IEnumerable<CategoryTitle>> GetTitles(long categoryId);
+
+    Task<IEnumerable<NavMenuItem>> GetNavMenuItems();
 }

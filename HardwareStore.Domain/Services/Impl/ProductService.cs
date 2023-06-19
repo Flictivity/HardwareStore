@@ -28,9 +28,9 @@ public class ProductService : IProductService
         return await _productRepository.CreateProduct(product);
     }
 
-    public async Task<IEnumerable<Product>> GetProducts()
+    public async Task<IEnumerable<Product>> GetProducts(long categoryId, bool forAdmin)
     {
-        return await _productRepository.GetProducts();
+        return await _productRepository.GetProducts(categoryId, forAdmin);
     }
 
     public async Task<BaseResult> UpdateProduct(Product product)

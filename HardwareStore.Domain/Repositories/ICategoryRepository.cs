@@ -14,4 +14,5 @@ public interface ICategoryRepository
     Task<MainCategory?> GetMainCategory(long id);
     Task<Category?> GetCategory(long id);
     Task<IEnumerable<CategoryTitle>> GetTitles(long categoryId);
+    Task<IEnumerable<NavMenuItem>> GetNavMenuItems();
 }

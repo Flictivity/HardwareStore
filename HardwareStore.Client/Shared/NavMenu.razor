@@ -1,7 +1,33 @@
-﻿<MudNavMenu>
-    <MudNavLink>1</MudNavLink>
+﻿@using HardwareStore.Domain.Services
+@using HardwareStore.Domain.Models
+
+@inject ICategoryService CategoryService;
+@inject NavigationManager NavigationManager;
+
+<MudNavMenu>
+    @foreach (NavMenuItem item in _navMenuItems)
+    {
+        <MudNavGroup Title="@item.MainCategoryName">
+            @foreach (Category category in item.Categories)
+            {
+                var route = $"products/{category.Id}";
+                <MudNavLink ForceLoad="true" Href=@route OnClick="() => Navigate(category.Id)">@category.Name</MudNavLink>
+            }
+        </MudNavGroup>
+    }
 </MudNavMenu>
 
 @code {
-    
+    private List<NavMenuItem> _navMenuItems = new();
+    protected override async Task OnInitializedAsync()
+    {
+        _navMenuItems = (await CategoryService.GetNavMenuItems()).ToList();
+        await base.OnInitializedAsync();
+    }
+
+    private void Navigate(long categoryId)
+    {
+        NavigationManager.NavigateTo($"products/{categoryId}");
+        StateHasChanged();
+    }
 }

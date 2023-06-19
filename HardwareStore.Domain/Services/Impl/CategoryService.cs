@@ -69,4 +69,9 @@ public class CategoryService : ICategoryService
     {
         return await _categoryRepository.GetTitles(categoryId);
     }
+
+    public async Task<IEnumerable<NavMenuItem>> GetNavMenuItems()
+    {
+        return await _categoryRepository.GetNavMenuItems();
+    }
 }

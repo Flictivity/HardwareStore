@@ -1,7 +1,6 @@
-﻿@page "/products"
+﻿@page "/products/{CategoryId:long}"
 @using HardwareStore.Domain.Services
 @using HardwareStore.Domain.Models
-@using HardwareStore.Domain.Services.Impl
 @using HardwareStore.Client.Data
 
 @inject IProductService ProductService;
@@ -9,6 +8,14 @@
 @inject IUserProductsService UserProductsService;
 @inject ISnackbar Snackbar;
 
+@if (!_isLoaded)
+{
+    <MudProgressLinear Color="Color.Primary"/>
+}
+@if (_isLoaded && _products.Count == 0)
+{
+    <h1>Товары не найдены</h1>
+}
 <MudGrid Spacing="1" Class="d-flex" Justify="Justify.SpaceAround">
     @foreach (Product product in _products)
     {
@@ -43,6 +50,7 @@
                     <MudContainer Class="d-flex flex-column justify-space-between pl-5">
                         <MudText Align="Align.Start" Color="Color.Info">
                             <b>Название категории</b>
+                            @product.Category.Name
                         </MudText>
                         <MudText Align="Align.Start" Class="mt-1 mb-2"><b>Наименование:</b> @product.Name</MudText>
                         <MudText Align="Align.Start" Class="mb-2">Код: @product.Code</MudText>
@@ -73,11 +81,17 @@
 </MudGrid>
 
 @code {
+
+    [Parameter]
+    public long CategoryId { get; set; } = 1;
     private List<Product> _products = new();
+
+    private bool _isLoaded;
 
     protected override async Task OnInitializedAsync()
     {
-        _products = (await ProductService.GetProducts()).ToList();
+        _products = (await ProductService.GetProducts(CategoryId)).ToList();
+        _isLoaded = true;
         await base.OnInitializedAsync();
     }
 

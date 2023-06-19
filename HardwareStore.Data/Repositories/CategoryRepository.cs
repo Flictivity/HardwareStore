@@ -135,4 +135,23 @@ public class CategoryRepository : ICategoryRepository
         }
         return categoryTitles;
     }
+
+    public async Task<IEnumerable<NavMenuItem>> GetNavMenuItems()
+    {
+        var res = new List<NavMenuItem>();
+        foreach (var mainCategory in _context.MainCategories)
+        {
+            var categories = _context.Categories.Where(x => x.MainCategoryId == mainCategory.Id).ToList();
+            var navMenuItem = new NavMenuItem
+            {
+                MainCategoryName = mainCategory.Name,
+                MainCategoryId = mainCategory.Id,
+                Categories = categories.Select(EntityConverter.ConvertCategory).ToList()
+            };
+            
+            res.Add(navMenuItem);
+        }
+
+        return res;
+    }
 }

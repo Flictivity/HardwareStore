@@ -118,11 +118,14 @@ public class ProductRepository : IProductRepository
         return new BaseResult {Success = true};
     }
 
-    public async Task<IEnumerable<Product>> GetProducts()
+    public async Task<IEnumerable<Product>> GetProducts(long categoryId, bool forAdmin)
     {
         var products = new List<Product>();
-        var res = await _readonlyContext.Connection.QueryAsync<ProductDb>(
-            ProductRepositoryQueries.GetProducts);
+        var res = !forAdmin
+            ? await _readonlyContext.Connection.QueryAsync<ProductDb>(
+                ProductRepositoryQueries.GetProducts, new {categoryId})
+            : await _readonlyContext.Connection.QueryAsync<ProductDb>(
+                ProductRepositoryQueries.GetProductsForAdmin);
 
         foreach (var product in res)
         {

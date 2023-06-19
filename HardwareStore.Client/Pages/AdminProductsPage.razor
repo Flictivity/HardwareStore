@@ -76,7 +76,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _products = (await ProductService.GetProducts()).ToList();
+        _products = (await ProductService.GetProducts(0,true)).ToList();
         await base.OnInitializedAsync();
     }
 
