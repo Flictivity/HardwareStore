@@ -2,10 +2,12 @@
 @using HardwareStore.Domain.Models
 @using HardwareStore.Domain.Services
 @using HardwareStore.Client.Data
+@using HardwareStore.Domain.Services.Impl
 
 @inject IUserProductsService UserProductsService;
 @inject ISnackbar Snackbar;
 @inject NavigationManager NavigationManager;
+@inject IOrderService OrderService;
 
 @if (AppState.AuthorizedUser is null)
 {
@@ -82,6 +84,9 @@
     }
 </MudGrid>
 
+<MudButton Style="position: fixed; bottom: 0; right: 0; margin: 35px 25px;" Color="Color.Primary"
+           OnClick="async () => await CreateOrder()">Оформить заказ</MudButton>
+
 
 @code {
     [Parameter]
@@ -134,5 +139,16 @@
             return;
         }
         Snackbar.Add(res.Message, Severity.Info);
+    }
+
+    private async Task CreateOrder()
+    {
+        var res = await OrderService.CreateOrder(_products.Where(x => x != null), UserId);
+        if (res.Success)
+        {
+            Snackbar.Add("Заказ успешно сформирован", Severity.Success);
+            return;
+        }
+        Snackbar.Add(res.Message, Severity.Error);
     }
 }

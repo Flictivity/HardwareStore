@@ -106,7 +106,7 @@ public partial class HardwareStoreContext : DbContext
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.OrderDate)
-                .HasColumnType("timestamp without time zone")
+                .HasColumnType("timestamp wit time zone")
                 .HasColumnName("order_date");
             entity.Property(e => e.OrderSum).HasColumnName("order_sum");
             entity.Property(e => e.UserId).HasColumnName("user_id");

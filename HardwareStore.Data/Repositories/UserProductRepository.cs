@@ -29,11 +29,6 @@ public class UserProductRepository : IUserProductRepository
 
     public async Task<BaseResult> AddToCartAsync(long productId, long userId)
     {
-        if (_context.UserCarts.Any(x => x.ProductId == productId && x.UserId == userId))
-        {
-            return new BaseResult {Success = false, Message = ProductErrorMessages.CartErrorMessage};
-        }
-
         var newUserCartProduct = new UserCartDb
         {
             ProductId = productId,

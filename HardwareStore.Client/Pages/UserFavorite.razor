@@ -66,10 +66,10 @@
                         </MudStack>
                         <MudStack Row="true">
                             <MudTooltip Text="Удалить">
-                                <MudFab OnClick="async () => await DeleteFromFavorite(product.Id)" Color="Color.Success" Icon="@Icons.Material.Filled.Delete"/>
+                                <MudFab OnClick="async () => await DeleteFromFavorite(product.Id)" Color="Color.Error" Icon="@Icons.Material.Filled.Delete"/>
                             </MudTooltip>
                             <MudTooltip Text="В корзину">
-                                <MudFab OnClick="async() => await AddToCart(product)" Color="Color.Error" Icon="@Icons.Material.Filled.Favorite"/>
+                                <MudFab OnClick="async() => await AddToCart(product)" Color="Color.Success" Icon="@Icons.Material.Filled.ShoppingCart"/>
                             </MudTooltip>
                             <MudTooltip Text="Подробнее">
                                 <MudFab OnClick="() => OpenProductPage(product.Id)" Color="Color.Primary" Icon="@Icons.Material.Filled.MoreHoriz"/>
@@ -127,7 +127,7 @@
         }
         if (product is null)
             return;
-        var res = await UserProductsService.AddToFavoriteAsync(product.Id,AppState.AuthorizedUser.Id);
+        var res = await UserProductsService.AddToCartAsync(product.Id,AppState.AuthorizedUser.Id);
         if (res.Success)
         {
             Snackbar.Add($"Товар {product.Name} успешно добавлен в корзину", Severity.Success);

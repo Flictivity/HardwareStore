@@ -7,7 +7,6 @@
 @inject NavigationManager NavigationManager;
 @inject IUserProductsService UserProductsService;
 @inject ISnackbar Snackbar;
-@inject ICategoryService CategoryService;
 
 @if (!_isLoaded)
 {
@@ -16,6 +15,7 @@
 @if (_isLoaded && _sortedProducts.Count == 0)
 {
     <h1>Товары не найдены</h1>
+    return;
 }
 <MudStack Row="true">
     <MudStack>
@@ -118,10 +118,13 @@
         _isLoaded = true;
 
         _sortedProducts = _products;
-        _costMax = _products.Max(x => x.Cost);
-        _costMin = _products.Min(x => x.Cost);
-        _savedCostMax = _costMax;
-        _savedCostMin = _costMin;
+        if (_products.Count != 0)
+        {
+            _costMax = _products.Max(x => x.Cost);
+            _costMin = _products.Min(x => x.Cost);
+            _savedCostMax = _costMax;
+            _savedCostMin = _costMin;
+        }
         await base.OnInitializedAsync();
     }
 

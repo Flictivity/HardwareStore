@@ -1,5 +1,27 @@
 ﻿@page "/"
+<PageTitle>Домашняя страница</PageTitle>
 
+<MudContainer>
+    <MudGrid>
+        <MudItem xs="12">
+            <MudPaper Elevation="4" Class="px-3 py-4">
+                <MudText Typo="Typo.h2" Variant="TypographyVariant.H2" Class="text-center">Привет!</MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12">
+                <MudText Typo="Typo.h6" Align="Align.Center">
+                    Добро пожаловать в магазин бытовой техники "ATLANT"!
+                    <br /><br />
+                    Мы предлагаем широкий выбор различной бытовой техники разного уровня и формата.
+                </MudText>
+                    <br /><br />
+                <MudText Typo="Typo.h5" Align="Align.Center">
+                    Тут вы найдете, что искали! 
+                    <MudIcon Icon="@Icons.Material.Filled.Favorite" Color="Color.Secondary" Size="Size.Large"></MudIcon>
+                </MudText>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
 @code {
     
 }

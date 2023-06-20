@@ -86,4 +86,15 @@ public static class EntityConverter
             Description = res.Description
         };
     }
+
+    public static Order ConvertOrder(OrderDb order)
+    {
+        return new Order
+        {
+            Id = order.Id,
+            UserId = order.UserId,
+            OrderDate = order.OrderDate,
+            OrderSum = order.OrderSum,
+        };
+    }
 }

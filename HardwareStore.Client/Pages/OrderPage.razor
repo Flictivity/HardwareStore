@@ -1,0 +1,100 @@
+﻿@page "/orders/{UserId:long}"
+@using HardwareStore.Domain.Models
+@using HardwareStore.Domain.Services
+
+@inject NavigationManager NavigationManager;
+@inject IOrderService OrderService;
+@inject ISnackbar Snackbar;
+
+<MudGrid Spacing="1" Class="d-flex" Justify="Justify.SpaceAround">
+        @foreach (Order order in _orders)
+        {
+            <MudItem xs="12" md="9" lg="12">
+                <MudStack>
+                    <MudText Typo="Typo.h6" >Номер заказа: @order.Id</MudText>
+                    <MudText Typo="Typo.h6" >Дата: @order.OrderDate</MudText>
+                    <MudText Typo="Typo.h6" >Сумма: @order.OrderSum</MudText>
+                </MudStack>
+                <MudGrid>
+                    @foreach (Product? product in order.Products)
+                    {
+                        @if (product is null)
+                        {
+                            <MudItem>
+                                <MudText>Товар не найден...</MudText>
+                            </MudItem>
+                        }
+                        <MudItem>
+                            <MudPaper Class="pa-5 d-flex justify-start align-center">
+                                <MudContainer Class="d-flex align-center justify-space-around">
+                                    @if (product.Images.Count == 0)
+                                    {
+                                        <MudImage Class="mr-5" Height="200" Width="200">
+                                            <MudSkeleton Animation="Animation.Pulse" SkeletonType="SkeletonType.Circle" Height="200px" Width="200"/>
+                                        </MudImage>
+                                    }
+                                    @foreach (var image in product.Images.Take(1))
+                                    {
+                                        var base64ImageString = Convert.ToBase64String(image.Source);
+                                        var convertedSource = $"data:image;base64,{base64ImageString}";
+                                        <MudImage Style="width: 35%; height: 35%; min-height: 100px; min-width: 100px" Src="@convertedSource" Class="mr-5"/>
+                                    }
+                                    <MudHidden Breakpoint="Breakpoint.Xs">
+                                        <MudStack Class="d-flex flex-column pa-0" Spacing="2">
+                                            <MudText Color="Color.Info" Align="Align.Start" Class="d-flex">
+                                                <b>Характеристики:</b>
+                                            </MudText>
+                                            @foreach (Characteristic characteristic in product.Characteristics.Take(4))
+                                            {
+                                                <MudText>
+                                                    <b>@characteristic.Name: </b>@characteristic.Value
+                                                </MudText>
+                                            }
+                                        </MudStack>
+                                    </MudHidden>
+                                    <MudContainer Class="d-flex flex-column justify-space-between pl-5">
+                                        <MudText Align="Align.Start" Color="Color.Info">
+                                            <b>Название категории</b>
+                                            @product.Category.Name
+                                        </MudText>
+                                        <MudText Align="Align.Start" Class="mt-1 mb-2"><b>Наименование:</b> @product.Name</MudText>
+                                        <MudText Align="Align.Start" Class="mb-2">Код: @product.Code</MudText>
+                                        <MudStack Row="true" Spacing="1" Class="mb-5">
+                                            <MudText Color="Color.Secondary">
+                                                <b>Стоимость:</b>
+                                            </MudText>
+                                            <MudText>
+                                                @product.Cost
+                                            </MudText>
+                                        </MudStack>
+                                        <MudStack Row="true">
+                                            <MudTooltip Text="Подробнее">
+                                                <MudFab OnClick="() => OpenProductPage(product.Id)" Color="Color.Primary" Icon="@Icons.Material.Filled.MoreHoriz"/>
+                                            </MudTooltip>
+                                        </MudStack>
+                                    </MudContainer>
+                                </MudContainer>
+                            </MudPaper>
+                        </MudItem>    
+                    }
+                </MudGrid>
+            </MudItem>
+        }
+    </MudGrid>
+
+@code {
+    [Parameter]
+    public long UserId { get; set; } = 1;
+    private List<Order> _orders = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _orders = (await OrderService.GetOrders(UserId)).ToList();
+        await base.OnInitializedAsync();
+    }
+
+    private void OpenProductPage(long id)
+    {
+        NavigationManager.NavigateTo($"/product/{id}");
+    }
+}
